@@ -1,0 +1,28 @@
+# Security & Database Exclusions
+db.sqlite3
+*.sqlite3
+*.db
+backend/db.sqlite3
+backend/*.sqlite3
+.env
+*.env
+
+# Dependencies & Builds
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+__pycache__/
+backend/__pycache__/
+*.pyc
+
+# Media & Uploads
+media/
+backend/media/
+backend/uploads/
+
+# OS & IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
