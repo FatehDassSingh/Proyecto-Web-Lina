@@ -1,0 +1,169 @@
+{
+  "categories": [
+    {
+      "id": "salados",
+      "name": "Boxes Colectivos Salados",
+      "description": "Selección artesanal de mini panecillos, croissants, tapaditos y bocados salados para compartir."
+    },
+    {
+      "id": "criollos",
+      "name": "Boxes Mix Criollos Gourmet",
+      "description": "Clásicos parrilleros chilenos en formato bocado: mini hamburguesas, churrasquitos, choripanes y anticuchos."
+    },
+    {
+      "id": "bebidas",
+      "name": "Coffee Break & Bebidas Premium",
+      "description": "Estaciones de café filtrado de autor y dispensadores de jugos naturales de estación."
+    },
+    {
+      "id": "dulces",
+      "name": "Estación Dulce & Repostería Fina",
+      "description": "Trilogía dulce repostera: shots de tiramisú, mini brownies, alfajores de maicena y churros."
+    }
+  ],
+  "items": [
+    {
+      "id": "box-favoritos",
+      "category": "salados",
+      "name": "Box Mix Selección Favoritos",
+      "units": 24,
+      "price": 29900,
+      "description": "6u Panecillos Ave Pimentón, 6u Tapaditos Premium Ave Mayo, 6u Panecillos Jamón y Queso, 6u Bocados Caprese en Miniature.",
+      "image": "/images/box_favoritos.jpg",
+      "is_featured": true,
+      "badge": "Recomendado de la Casa"
+    },
+    {
+      "id": "box-autor",
+      "category": "salados",
+      "name": "Box Mix de Autor & Tendencia",
+      "units": 36,
+      "price": 48500,
+      "description": "9u Mini Croissants de la Casa (Jamón/Queso), 9u Wraps Integrales de Autor (Vegetales/Ave), 9u Panecillos de Palta Fresca, 9u Bocados Caprese.",
+      "image": "/images/empanaditas_pino.jpg",
+      "is_featured": true,
+      "badge": "Más Vendido"
+    },
+    {
+      "id": "box-master-salado",
+      "category": "salados",
+      "name": "Box Master Mix Banquetería Lina",
+      "units": 42,
+      "price": 54900,
+      "description": "6u Ave Pimentón, 6u Palta Fresca, 6u Jamón/Queso, 6u Tapaditos Premium Ave Mayo, 6u Wraps Integrales, 6u Mini Croissants, 6u Bocados Caprese.",
+      "image": "/images/box_favoritos.jpg",
+      "is_featured": false,
+      "badge": null
+    },
+    {
+      "id": "box-parrillero-familiar",
+      "category": "criollos",
+      "name": "Box Mix Parrillero Familiar",
+      "units": 16,
+      "price": 32900,
+      "description": "4u Mini Hamburguesas de Autor, 4u Mini Churrascos Caseros, 4u Mini Choripanes Gourmet (panes largos), 4u Mini Anticuchos Selección.",
+      "image": "/images/box_parrillero.jpg",
+      "is_featured": true,
+      "badge": "Favorito Criollo"
+    },
+    {
+      "id": "box-parrillero-casa",
+      "category": "criollos",
+      "name": "Box Mix Parrillero de la Casa",
+      "units": 32,
+      "price": 59900,
+      "description": "8u Mini Hamburguesas de Autor, 8u Mini Churrascos Caseros, 8u Mini Choripanes Gourmet, 8u Mini Anticuchos Selección.",
+      "image": "/images/box_parrillero.jpg",
+      "is_featured": false,
+      "badge": null
+    },
+    {
+      "id": "box-master-parrillero",
+      "category": "criollos",
+      "name": "Box Master Mix Parrillero Premium",
+      "units": 48,
+      "price": 84900,
+      "description": "12u Mini Hamburguesas de Autor, 12u Mini Churrascos Caseros, 12u Mini Choripanes Gourmet, 12u Mini Anticuchos Selección.",
+      "image": "/images/box_parrillero.jpg",
+      "is_featured": true,
+      "badge": "Edición Banquete"
+    },
+    {
+      "id": "refresco-cafe-basico",
+      "category": "bebidas",
+      "name": "Box Mix Estación Refresco & Café (Básico)",
+      "units": 15,
+      "price": 34900,
+      "description": "Dispensador de Jugo (4L, pulpa natural de estación en vidrio) + Termo de Café de Autor (2.5L premium filtrado). Incluye azúcar, endulzante y vasos (~15 personas).",
+      "image": "/images/estacion_coffee.jpg",
+      "is_featured": false,
+      "badge": null
+    },
+    {
+      "id": "coffee-break-full",
+      "category": "bebidas",
+      "name": "Box Master Estación Coffee Break Lina (Full)",
+      "units": 25,
+      "price": 52900,
+      "description": "Dispensador de Jugo (4L con rodajas de fruta fresca) + Dispensador Térmico de Café (4L grano molido gama alta) + Set Vasos & Servilletas de la Casa + Complementos Premium (leche, crema, azúcar rubia, endulzante) (~25 personas).",
+      "image": "/images/estacion_coffee.jpg",
+      "is_featured": true,
+      "badge": "Imperdible Eventos"
+    },
+    {
+      "id": "gran-mix-dulce-mediano",
+      "category": "dulces",
+      "name": "Gran Mix Dulce Mediano",
+      "units": 15,
+      "price": 21500,
+      "description": "Surtido variado de shots de tiramisú, brownies, muffins, churros con salsa y alfajores de maicena. (Mínimo 48 horas de anticipación).",
+      "image": "/images/gran_mix_dulce.jpg",
+      "is_featured": false,
+      "badge": null
+    },
+    {
+      "id": "gran-mix-dulce-grande",
+      "category": "dulces",
+      "name": "Gran Mix Dulce Grande",
+      "units": 35,
+      "price": 46000,
+      "description": "El recorrido repostero definitivo para banquetes y mesas de postre: Shots de tiramisú, mini brownies, muffins surtidos, churros y alfajores de maicena.",
+      "image": "/images/gran_mix_dulce.jpg",
+      "is_featured": true,
+      "badge": "Repostería Fina"
+    }
+  ],
+  "communes": [
+    { "name": "Las Condes", "fee": 4500 },
+    { "name": "Providencia", "fee": 4000 },
+    { "name": "Vitacura", "fee": 4500 },
+    { "name": "Ñuñoa", "fee": 3500 },
+    { "name": "Santiago Centro", "fee": 3500 },
+    { "name": "La Reina", "fee": 4000 },
+    { "name": "Lo Barnechea", "fee": 5500 },
+    { "name": "Macul", "fee": 3500 },
+    { "name": "Peñalolén", "fee": 4000 },
+    { "name": "Maipú", "fee": 4500 },
+    { "name": "La Florida", "fee": 4000 },
+    { "name": "Huechuraba", "fee": 4500 },
+    { "name": "Quilicura", "fee": 4500 },
+    { "name": "Estación Central", "fee": 3500 },
+    { "name": "Pudahuel", "fee": 4500 },
+    { "name": "San Miguel", "fee": 3500 },
+    { "name": "San Joaquín", "fee": 3500 },
+    { "name": "La Cisterna", "fee": 3500 },
+    { "name": "Recoleta", "fee": 3500 },
+    { "name": "Independencia", "fee": 3500 },
+    { "name": "Quinta Normal", "fee": 3500 },
+    { "name": "Conchalí", "fee": 3500 },
+    { "name": "Renca", "fee": 3500 },
+    { "name": "Cerro Navia", "fee": 4000 },
+    { "name": "Lo Prado", "fee": 3500 },
+    { "name": "Cerrillos", "fee": 4000 },
+    { "name": "Pedro Aguirre Cerda", "fee": 3500 },
+    { "name": "San Ramón", "fee": 4000 },
+    { "name": "La Granja", "fee": 4000 },
+    { "name": "El Bosque", "fee": 4000 },
+    { "name": "La Pintana", "fee": 4500 }
+  ]
+}

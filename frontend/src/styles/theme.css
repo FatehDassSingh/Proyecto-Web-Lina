@@ -1,0 +1,185 @@
+/* Design System for Banquetería Lina */
+:root {
+  --bg-dark: #120B07;
+  --bg-card: #1A120C;
+  --bg-card-hover: #241A12;
+  --bg-modal: #1D150F;
+  --border-amber: rgba(217, 130, 43, 0.25);
+  --border-amber-strong: rgba(217, 130, 43, 0.6);
+  
+  --amber-primary: #D9822B;
+  --amber-hover: #E59A3A;
+  --gold-accent: #E5C384;
+  --wheat-light: #DFB76C;
+  --cream-text: #FAF6F0;
+  --muted-text: #A6988B;
+  
+  --danger: #E54B4B;
+  --success: #38A169;
+  --warning: #DD6B20;
+  
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  
+  --shadow-glow: 0 0 25px rgba(217, 130, 43, 0.2);
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--cream-text);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .font-serif {
+  font-family: var(--font-serif);
+  letter-spacing: -0.02em;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: #3A2B20;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--amber-primary);
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: rgba(26, 18, 12, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-amber);
+  border-radius: var(--radius-lg);
+}
+
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-amber);
+  border-radius: var(--radius-md);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--amber-primary);
+  box-shadow: var(--shadow-glow);
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, var(--amber-primary) 0%, #B8671B 100%);
+  color: #FFF;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(217, 130, 43, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--amber-hover) 0%, var(--amber-primary) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(217, 130, 43, 0.45);
+}
+
+.btn-secondary {
+  background: rgba(229, 195, 132, 0.1);
+  color: var(--gold-accent);
+  border: 1px solid rgba(229, 195, 132, 0.4);
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(229, 195, 132, 0.2);
+  border-color: var(--gold-accent);
+}
+
+/* Badges */
+.badge-gold {
+  background: rgba(18, 11, 7, 0.92);
+  color: #FAF6F0;
+  border: 1px solid #D9822B;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8), 0 0 10px rgba(217, 130, 43, 0.3);
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(8px);
+}
+
+/* Animations */
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.pulse-amber {
+  animation: pulseGlow 3s infinite ease-in-out;
+}
+
+@keyframes steamRise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.4;
+  }
+  60% {
+    opacity: 0.25;
+  }
+  100% {
+    transform: translateY(-90px) scale(1.6);
+    opacity: 0;
+  }
+}
+
+.animate-steam-1 {
+  animation: steamRise 4.5s infinite ease-out;
+}
+.animate-steam-2 {
+  animation: steamRise 6.5s infinite ease-out 1.8s;
+}
+.animate-steam-3 {
+  animation: steamRise 5.5s infinite ease-out 3.2s;
+}
+
+@keyframes subtleZoom {
+  0%, 100% { transform: scale(1.0); }
+  50% { transform: scale(1.08); }
+}
+
+.animate-subtle-zoom {
+  animation: subtleZoom 20s infinite ease-in-out;
+}
