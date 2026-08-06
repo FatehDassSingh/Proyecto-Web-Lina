@@ -183,3 +183,85 @@ h1, h2, h3, h4, .font-serif {
 .animate-subtle-zoom {
   animation: subtleZoom 20s infinite ease-in-out;
 }
+
+/* Rich Text Editor & Rendered Content Styling */
+.rich-text-container, .rich-text-editor-area {
+  line-height: 1.7;
+}
+
+.rich-text-container h1, .rich-text-editor-area h1 {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--gold-accent);
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.rich-text-container h2, .rich-text-editor-area h2 {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--gold-accent);
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.rich-text-container h3, .rich-text-editor-area h3 {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--wheat-light);
+  margin-top: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.rich-text-container p, .rich-text-editor-area p {
+  margin-bottom: 0.75rem;
+}
+
+.rich-text-container ul, .rich-text-editor-area ul {
+  list-style-type: disc !important;
+  padding-left: 1.75rem !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.rich-text-container ol, .rich-text-editor-area ol {
+  list-style-type: decimal !important;
+  padding-left: 1.75rem !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.rich-text-container li, .rich-text-editor-area li {
+  margin-bottom: 0.35rem !important;
+  display: list-item !important;
+}
+
+.rich-text-container hr, .rich-text-editor-area hr {
+  border: none;
+  border-top: 1px solid var(--border-amber);
+  margin: 1.25rem 0;
+}
+
+.rich-text-container blockquote, .rich-text-editor-area blockquote {
+  border-left: 3px solid var(--amber-primary);
+  padding-left: 1rem;
+  font-style: italic;
+  color: var(--gold-accent);
+  margin: 1rem 0;
+}
+
+.rich-text-container a, .rich-text-editor-area a {
+  color: var(--gold-accent);
+  text-decoration: underline;
+}
+
+.rich-text-container img, .rich-text-editor-area img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border-amber);
+  margin: 1rem 0;
+}

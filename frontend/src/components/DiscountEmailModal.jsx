@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Mail, Sparkles, CheckCircle2 } from 'lucide-react';
+import API_BASE_URL from '../config/api';
 
 export default function DiscountEmailModal({ isOpen, onClose }) {
   const [email, setEmail] = useState('');
@@ -19,7 +20,7 @@ export default function DiscountEmailModal({ isOpen, onClose }) {
 
     setIsLoading(true);
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/coupons/lead/', {
+      const res = await fetch(`${API_BASE_URL}/coupons/lead/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -104,23 +105,14 @@ export default function DiscountEmailModal({ isOpen, onClose }) {
                 <span className="font-mono text-2xl font-bold text-[#E5C384] tracking-widest">{couponResult.coupon_code}</span>
               </div>
 
-              {/* Resend Email Preview */}
-              <div className="bg-[#1A120C] p-4 rounded-xl text-left border border-[#D9822B]/20 text-xs space-y-2 mt-4">
-                <div className="flex items-center justify-between border-b border-[#D9822B]/20 pb-2">
-                  <span className="font-semibold text-[#E5C384]">📧 Vista previa del Correo enviado vía Resend</span>
-                  <span className="text-[10px] text-[#A6988B]">Asunto: Tu 5% en Banquetería Lina</span>
-                </div>
-                <p className="italic text-[#DFB76C] text-[11px] border-l-2 border-[#D9822B] pl-2 py-1">
-                  "Queremos liberar a los anfitriones del estrés y permitirles ser invitados en su propia fiesta. Creemos en el arte de cuidar cada detalle invisible para que tú solo tengas que preocuparte de lo más importante: estar presente, conectar con los tuyos y disfrutar de la compañía"
+              <div className="bg-[#1A120C] p-3.5 rounded-xl border border-green-500/30 text-xs text-[#FAF6F0] space-y-1">
+                <p className="font-semibold text-green-400">📧 ¡Correo de bienvenida enviado con éxito!</p>
+                <p className="text-[11px] text-[#A6988B] leading-relaxed">
+                  Enviamos un correo a <strong className="text-[#E5C384]">{email}</strong> con los detalles de tu cupón y nuestra carta de platos recomendados para tu evento.
                 </p>
-                <img 
-                  src="/images/empanaditas_pino.jpg" 
-                  alt="Plato Estrella" 
-                  className="w-full h-32 object-cover rounded-lg border border-[#D9822B]/20 mt-2"
-                />
               </div>
 
-              <button onClick={onClose} className="btn-primary w-full py-2.5 text-xs mt-2">
+              <button onClick={onClose} className="btn-primary w-full py-3 text-xs font-bold mt-2 cursor-pointer">
                 Usar Cupón en la Carta
               </button>
             </div>

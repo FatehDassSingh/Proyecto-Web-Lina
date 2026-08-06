@@ -1,7 +1,7 @@
 import React from 'react';
-import { Plus, Star } from 'lucide-react';
+import { Plus, Star, ArrowRight } from 'lucide-react';
 
-export default function FeaturedGrid({ featuredItems, onAddToCart }) {
+export default function FeaturedGrid({ featuredItems, onAddToCart, onNavigateToCarta }) {
   return (
     <section className="py-16 px-4 bg-[#120B07] border-y border-[#D9822B]/20">
       <div className="max-w-7xl mx-auto">
@@ -83,6 +83,22 @@ export default function FeaturedGrid({ featuredItems, onAddToCart }) {
             </div>
           ))}
         </div>
+
+        {/* View Full Carta Button at the bottom of Especialidades */}
+        {onNavigateToCarta && (
+          <div className="mt-12 text-center">
+            <button 
+              onClick={() => {
+                onNavigateToCarta();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="btn-primary inline-flex items-center gap-2.5 px-8 py-3.5 text-sm font-bold shadow-xl hover:scale-105 transition-all group"
+            >
+              <span>Ver Carta Completa</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        )}
 
       </div>
     </section>

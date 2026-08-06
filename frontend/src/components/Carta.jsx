@@ -26,9 +26,9 @@ export default function Carta({ categories, items, cartItems, onUpdateQuantity, 
         </p>
       </div>
 
-      {/* Category Tabs Bar with generous spacing */}
+      {/* Category Tabs Bar with flex-wrap for all categories */}
       <div className="glass-panel p-4 mb-8 sticky top-20 z-30 shadow-2xl">
-        <div className="flex items-center gap-3 overflow-x-auto w-full pb-3 scrollbar-thin">
+        <div className="flex flex-wrap items-center gap-2.5 w-full pb-1">
           <button
             onClick={() => setActiveCategory('all')}
             className={`px-5 py-2.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${

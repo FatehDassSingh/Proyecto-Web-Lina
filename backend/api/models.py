@@ -15,7 +15,7 @@ class MenuItem(models.Model):
     item_id = models.CharField(max_length=50, unique=True, default='')
     name = models.CharField(max_length=150)
     units = models.IntegerField(default=1)
-    price = models.DecimalField(max_digits=10, decimal_places=0)
+    price = models.DecimalField(max_digits=12, decimal_places=0)
     description = models.TextField()
     image = models.CharField(max_length=255)
     is_featured = models.BooleanField(default=False)
@@ -33,6 +33,17 @@ class Commune(models.Model):
 
     def __str__(self):
         return f"{self.name} (+${self.delivery_fee:,})"
+
+class BlockedDate(models.Model):
+    date = models.DateField(unique=True)
+    reason = models.CharField(max_length=255, blank=True, null=True, default='Fecha no disponible por la administración')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['date']
+
+    def __str__(self):
+        return f"Bloqueada: {self.date} ({self.reason})"
 
 class LeadCoupon(models.Model):
     email = models.EmailField()
@@ -141,6 +152,18 @@ class Order(models.Model):
 
         super().save(*args, **kwargs)
 
+    @property
+    def decrypted_address(self):
+        return decrypt_value(self.address)
+
+    @property
+    def decrypted_phone(self):
+        return decrypt_value(self.client_phone)
+
+    @property
+    def decrypted_rut(self):
+        return decrypt_value(self.client_rut)
+
     def __str__(self):
         return f"Pedido {self.code} - {self.client_name} ({self.status})"
 
@@ -172,8 +195,82 @@ class OrderHistory(models.Model):
 
 class BusinessConfig(models.Model):
     key = models.CharField(max_length=50, unique=True)
-    value = models.CharField(max_length=255)
+    value = models.TextField()
     description = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"{self.key} = {self.value}"
+
+class ConfigHistory(models.Model):
+    """Registro inmutable de auditoría para cambios en parámetros del negocio"""
+    modified_by = models.CharField(max_length=150, default='Administración')
+    changes_summary = models.TextField(help_text="Resumen de parámetros modificados")
+    previous_config = models.JSONField(default=dict)
+    new_config = models.JSONField(default=dict)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"Config Audit {self.timestamp.strftime('%Y-%m-%d %H:%M')}: {self.modified_by}"
+
+class AdminUser(models.Model):
+    username = models.CharField(max_length=50, unique=True)
+    first_name = models.CharField(max_length=50, default='Lina')
+    last_name_paternal = models.CharField(max_length=50, default='Propietaria')
+    last_name_maternal = models.CharField(max_length=50, blank=True, null=True, default='')
+    rut_body = models.CharField(max_length=10, default='11111111')
+    rut_dv = models.CharField(max_length=1, default='1')
+    country = models.CharField(max_length=50, default='Chile')
+    region = models.CharField(max_length=100, default='Región Metropolitana de Santiago')
+    city = models.CharField(max_length=100, default='Santiago')
+    address = models.CharField(max_length=255, blank=True, null=True, default='')
+    email = models.EmailField(blank=True, null=True)
+    password = models.CharField(max_length=255)
+    reset_token = models.CharField(max_length=100, blank=True, null=True)
+    reset_token_created_at = models.DateTimeField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    is_superadmin = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    @property
+    def is_protected(self):
+        return self.is_superadmin or (self.username and self.username.lower() in ['lina', 'admin']) or self.pk == 1 or (self.first_name and self.first_name.lower() == 'lina' and self.last_name_paternal and self.last_name_paternal.lower() == 'propietaria')
+
+    @property
+    def full_name(self):
+        maternal = f" {self.last_name_maternal}" if self.last_name_maternal else ""
+        return f"{self.first_name} {self.last_name_paternal}{maternal}".strip()
+
+    @property
+    def formatted_rut(self):
+        try:
+            body_int = int(self.rut_body)
+            formatted_body = f"{body_int:,}".replace(',', '.')
+        except ValueError:
+            formatted_body = self.rut_body
+        return f"{formatted_body}-{str(self.rut_dv).upper()}"
+
+    def __str__(self):
+        return f"{self.username} ({self.full_name} - RUT: {self.formatted_rut})"
+
+class SiteVisit(models.Model):
+    total_visits = models.BigIntegerField(default=1000)
+    total_uniques = models.BigIntegerField(default=420)
+    last_visit_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Visitas Totales: {self.total_visits} | Únicas: {self.total_uniques}"
+
+class VisitLog(models.Model):
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    user_agent = models.CharField(max_length=255, blank=True, null=True)
+    path = models.CharField(max_length=100, default='/')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
