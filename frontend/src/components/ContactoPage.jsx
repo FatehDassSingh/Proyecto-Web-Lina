@@ -1,9 +1,23 @@
 import React, { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, Send, CheckCircle2 } from 'lucide-react';
+import { Phone, Mail, Clock, Send, CheckCircle2 } from 'lucide-react';
 
-export default function ContactoPage() {
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
+export default function ContactoPage({ businessConfig }) {
+  const [formData, setFormData] = useState({ 
+    firstName: '', 
+    firstLastName: '', 
+    secondLastName: '', 
+    email: '', 
+    phone: '+56 9 ', 
+    message: '' 
+  });
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const contactPhone = businessConfig?.contact_phone || '+56 9 3465 6961';
+  const contactEmail = businessConfig?.contact_email || 'contacto@banqueterialina.cl';
+  const businessHours = businessConfig?.business_hours || 'Lunes a Domingo de 09:00 a 19:00 hrs';
+
+  const cleanWaNumber = contactPhone.replace(/[^0-9]/g, '');
+  const waUrl = `https://wa.me/${cleanWaNumber}?text=${encodeURIComponent('Hola Banquetería Lina, deseo hacer una consulta')}`;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -32,32 +46,12 @@ export default function ContactoPage() {
           
           <div className="space-y-4 text-xs text-[#FAF6F0]">
             <div className="flex items-start gap-3">
-              <div className="p-2 rounded.lg bg-[#D9822B]/20 text-[#E5C384] border border-[#D9822B]/40 shrink-0">
-                <MapPin className="w-5 h-5" />
-              </div>
-              <div>
-                <strong className="block text-sm text-[#E5C384]">Ubicación & Cobertura</strong>
-                <p className="text-[#A6988B] mt-0.5">Santiago de Chile (Despacho a 32 comunas urbanas)</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-[#D9822B]/20 text-[#E5C384] border border-[#D9822B]/40 shrink-0">
                 <Clock className="w-5 h-5" />
               </div>
               <div>
                 <strong className="block text-sm text-[#E5C384]">Horario de Atención</strong>
-                <p className="text-[#A6988B] mt-0.5">Lunes a Domingo de 09:00 a 19:00 hrs</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-[#D9822B]/20 text-[#E5C384] border border-[#D9822B]/40 shrink-0">
-                <Phone className="w-5 h-5" />
-              </div>
-              <div>
-                <strong className="block text-sm text-[#E5C384]">Teléfono / WhatsApp</strong>
-                <p className="text-[#A6988B] mt-0.5">+56 9 1234 5678</p>
+                <p className="text-[#A6988B] mt-0.5">{businessHours}</p>
               </div>
             </div>
 
@@ -67,8 +61,33 @@ export default function ContactoPage() {
               </div>
               <div>
                 <strong className="block text-sm text-[#E5C384]">Correo Electrónico</strong>
-                <p className="text-[#A6988B] mt-0.5">contacto@banqueterialina.cl</p>
+                <p className="text-[#A6988B] mt-0.5">{contactEmail}</p>
               </div>
+            </div>
+
+            {/* Teléfono / WhatsApp as LAST ITEM rendered as an interactive Button */}
+            <div className="pt-2">
+              <a 
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/50 p-4 rounded-xl flex items-center justify-between group transition-all shadow-lg text-left block"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-lg bg-[#25D366]/25 text-[#25D366] border border-[#25D366]/40 shrink-0 group-hover:scale-110 transition-transform">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <strong className="block text-sm text-[#FAF6F0] group-hover:text-[#25D366] transition-colors font-bold">
+                      Teléfono / WhatsApp
+                    </strong>
+                    <span className="text-xs font-mono text-[#A6988B]">{contactPhone}</span>
+                  </div>
+                </div>
+                <span className="text-xs bg-[#25D366] text-black font-extrabold px-3.5 py-1.5 rounded-lg shadow group-hover:scale-105 transition-transform flex items-center">
+                  Chatear
+                </span>
+              </a>
             </div>
           </div>
         </div>
@@ -79,16 +98,42 @@ export default function ContactoPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <h3 className="font-serif text-xl font-bold text-[#FAF6F0] mb-2">Envíanos un Mensaje</h3>
               
+              {/* Atomized Name Fields */}
               <div>
-                <label className="text-xs text-[#A6988B] block mb-1">Nombre Completo *</label>
+                <label className="text-xs text-[#A6988B] block mb-1">Nombre *</label>
                 <input 
                   type="text" 
                   required
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  placeholder="Tu nombre"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                  placeholder="Ej: María"
                   className="w-full px-3 py-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs text-[#FAF6F0]"
                 />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-[#A6988B] block mb-1">Apellido Paterno *</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={formData.firstLastName}
+                    onChange={(e) => setFormData({...formData, firstLastName: e.target.value})}
+                    placeholder="Ej: González"
+                    className="w-full px-3 py-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs text-[#FAF6F0]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-[#A6988B] block mb-1">Apellido Materno</label>
+                  <input 
+                    type="text" 
+                    value={formData.secondLastName}
+                    onChange={(e) => setFormData({...formData, secondLastName: e.target.value})}
+                    placeholder="Ej: Pérez"
+                    className="w-full px-3 py-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs text-[#FAF6F0]"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -110,8 +155,7 @@ export default function ContactoPage() {
                     type="text" 
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    placeholder="+56 9 ..."
-                    className="w-full px-3 py-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs text-[#FAF6F0]"
+                    className="w-full px-3 py-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs text-[#FAF6F0] font-mono"
                   />
                 </div>
               </div>

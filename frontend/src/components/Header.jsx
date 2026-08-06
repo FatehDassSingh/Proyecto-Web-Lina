@@ -67,23 +67,6 @@ export default function Header({
         {/* Right Action Icons & Cart */}
         <div className="flex items-center gap-3">
           
-          {/* Quick triggers for Admin & QR marketing */}
-          <button 
-            onClick={onOpenMarketing} 
-            title="Piezas Publicitarias & QR"
-            className="p-2 text-[#A6988B] hover:text-[#E5C384] rounded-lg hover:bg-[#1A120C] transition-colors hidden sm:flex"
-          >
-            <QrCode className="w-4 h-4" />
-          </button>
-
-          <button 
-            onClick={onOpenAdmin} 
-            title="Panel de Administración"
-            className="p-2 text-[#A6988B] hover:text-[#E5C384] rounded-lg hover:bg-[#1A120C] transition-colors hidden sm:flex"
-          >
-            <ShieldCheck className="w-4 h-4" />
-          </button>
-
           {/* Cart Button */}
           <button
             onClick={onOpenCart}

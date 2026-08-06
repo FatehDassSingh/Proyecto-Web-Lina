@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Calendar, Clock, MapPin, CreditCard, Upload, CheckCircle2, AlertTriangle, Users, Tag, ShoppingBag, FileText, Image as ImageIcon, ShieldCheck, Plus, Minus, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { X, Calendar, Clock, MapPin, CreditCard, Upload, CheckCircle2, AlertTriangle, Users, Tag, ShoppingBag, FileText, Image as ImageIcon, ShieldCheck, Plus, Minus, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import API_BASE_URL from '../config/api';
 
 export default function ServiceCheckoutModal({ 
   isOpen, 
@@ -14,7 +15,24 @@ export default function ServiceCheckoutModal({
   const [step, setStep] = useState(1); // 1: Cart & Coupon, 2: Service & Date, 3: Address & Contact, 4: Payment & Voucher, 5: Success
   const [serviceType, setServiceType] = useState('RETIRO'); // RETIRO | MONTAJE_SOLO | SERVICIO_COMPLETO
   const [eventDate, setEventDate] = useState('');
-  const [timeSlot, setTimeSlot] = useState('12:00 - 14:00');
+  
+  const availableTimeSlots = useMemo(() => {
+    const raw = businessConfig?.time_slots;
+    if (raw && typeof raw === 'string' && raw.trim()) {
+      const parsed = raw.split(',').map(s => s.trim()).filter(Boolean);
+      if (parsed.length > 0) return parsed;
+    }
+    return ['10:00 - 12:00', '12:00 - 14:00', '14:00 - 16:00', '16:00 - 18:00'];
+  }, [businessConfig?.time_slots]);
+
+  const [timeSlot, setTimeSlot] = useState(availableTimeSlots[0] || '12:00 - 14:00');
+
+  useEffect(() => {
+    if (availableTimeSlots.length > 0 && !availableTimeSlots.includes(timeSlot)) {
+      setTimeSlot(availableTimeSlots[0]);
+    }
+  }, [availableTimeSlots]);
+
   const [guestsCount, setGuestsCount] = useState(25);
   const [selectedCommune, setSelectedCommune] = useState('');
   const [address, setAddress] = useState('');
@@ -57,16 +75,41 @@ export default function ServiceCheckoutModal({
     max_daily_portions: 250
   });
 
+  const [unavailableDatesData, setUnavailableDatesData] = useState({
+    unavailable_dates: [],
+    terreno_reserved_dates: [],
+    blocked_dates: []
+  });
+
   useEffect(() => {
     if (isOpen) {
       fetchConfigRules();
+      fetchUnavailableDates();
       if (onRefreshConfig) onRefreshConfig();
     }
-  }, [isOpen]);
+  }, [isOpen, serviceType]);
+
+  useEffect(() => {
+    if (eventDate) {
+      const isTerreno = serviceType === 'MONTAJE_SOLO' || serviceType === 'SERVICIO_COMPLETO';
+      const dateObj = new Date(eventDate + 'T00:00:00');
+      const isNonSaturdayTerreno = isTerreno && dateObj.getDay() !== 6;
+      const isTerrenoReserved = isTerreno && (
+        unavailableDatesData.terreno_reserved_dates?.includes(eventDate) ||
+        unavailableDatesData.unavailable_dates?.includes(eventDate)
+      );
+      const isBlockedOrFull = unavailableDatesData.unavailable_dates?.includes(eventDate);
+
+      if (isNonSaturdayTerreno || isTerrenoReserved || isBlockedOrFull) {
+        setEventDate('');
+        setErrorMessage(`⚠️ La fecha ${eventDate.split('-').reverse().join('/')} ya no está disponible para ${isTerreno ? 'servicios de montaje/banquetería en terreno' : 'este tipo de servicio'}. Por favor selecciona una fecha disponible.`);
+      }
+    }
+  }, [serviceType, unavailableDatesData]);
 
   const fetchConfigRules = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/config/');
+      const res = await fetch(`${API_BASE_URL}/config/`);
       const data = await res.json();
       if (data && typeof data === 'object') {
         setConfigRules({
@@ -76,6 +119,176 @@ export default function ServiceCheckoutModal({
         });
       }
     } catch (e) {}
+  };
+
+  const fetchUnavailableDates = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/orders/unavailable_dates/?service_type=${serviceType}`);
+      const data = await res.json();
+      if (data && Array.isArray(data.unavailable_dates)) {
+        setUnavailableDatesData(data);
+      }
+    } catch (e) {}
+  };
+
+  const handleDateSelectChange = (dateVal) => {
+    setErrorMessage('');
+    if (!dateVal) {
+      setEventDate('');
+      return;
+    }
+
+    const isTerreno = serviceType === 'MONTAJE_SOLO' || serviceType === 'SERVICIO_COMPLETO';
+    const isTerrenoReserved = isTerreno && (
+      unavailableDatesData.terreno_reserved_dates?.includes(dateVal) ||
+      unavailableDatesData.unavailable_dates?.includes(dateVal)
+    );
+    const isBlockedOrFull = unavailableDatesData.unavailable_dates?.includes(dateVal);
+    const isUnavailable = isTerrenoReserved || isBlockedOrFull;
+
+    if (isUnavailable) {
+      setEventDate('');
+      setErrorMessage(`⛔ La fecha ${dateVal.split('-').reverse().join('/')} ya se encuentra reservada para otro evento o bloqueada por la administración. Por favor selecciona otra fecha.`);
+      return;
+    }
+
+    const selectedDateObj = new Date(dateVal + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const diffDays = Math.ceil((selectedDateObj - today) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 3) {
+      setEventDate('');
+      setErrorMessage('Se exige un mínimo de 3 días de anticipación para realizar reservas.');
+      return;
+    }
+
+    if (isTerreno && selectedDateObj.getDay() !== 6) {
+      setEventDate('');
+      setErrorMessage('Los servicios de montaje decorativo y con garzones en terreno solo pueden realizarse los días Sábado.');
+      return;
+    }
+
+    setEventDate(dateVal);
+  };
+
+  const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
+
+  const handlePrevMonth = () => {
+    setCurrentCalendarDate(prev => {
+      const next = new Date(prev);
+      next.setMonth(next.getMonth() - 1);
+      return next;
+    });
+  };
+
+  const handleNextMonth = () => {
+    setCurrentCalendarDate(prev => {
+      const next = new Date(prev);
+      next.setMonth(next.getMonth() + 1);
+      return next;
+    });
+  };
+
+  const getUpcomingSaturdays = () => {
+    const saturdays = [];
+    const curr = new Date();
+    curr.setDate(curr.getDate() + 3);
+    
+    while (curr.getDay() !== 6) {
+      curr.setDate(curr.getDate() + 1);
+    }
+
+    for (let i = 0; i < 8; i++) {
+      const yyyy = curr.getFullYear();
+      const mm = String(curr.getMonth() + 1).padStart(2, '0');
+      const dd = String(curr.getDate()).padStart(2, '0');
+      const isoDate = `${yyyy}-${mm}-${dd}`;
+      const isUnavailable = unavailableDatesData.unavailable_dates?.includes(isoDate);
+      
+      saturdays.push({
+        isoDate,
+        formatted: `${dd}/${mm}/${yyyy}`,
+        isUnavailable
+      });
+
+      curr.setDate(curr.getDate() + 7);
+    }
+    return saturdays;
+  };
+
+  const renderCalendarDays = () => {
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    
+    const firstDay = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    let startDayOffset = firstDay.getDay() - 1;
+    if (startDayOffset === -1) startDayOffset = 6;
+
+    const minDateObj = new Date();
+    minDateObj.setHours(0, 0, 0, 0);
+    minDateObj.setDate(minDateObj.getDate() + 3);
+
+    const days = [];
+
+    for (let i = 0; i < startDayOffset; i++) {
+      days.push(<div key={`empty-${i}`} className="h-9" />);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateObj = new Date(year, month, d);
+      const mmStr = String(month + 1).padStart(2, '0');
+      const ddStr = String(d).padStart(2, '0');
+      const isoDate = `${year}-${mmStr}-${ddStr}`;
+
+      const isTooSoon = dateObj < minDateObj;
+      const isTerreno = serviceType === 'MONTAJE_SOLO' || serviceType === 'SERVICIO_COMPLETO';
+      const isNonSaturdayTerreno = isTerreno && dateObj.getDay() !== 6;
+      
+      const isTerrenoReserved = isTerreno && (
+        unavailableDatesData.terreno_reserved_dates?.includes(isoDate) ||
+        unavailableDatesData.unavailable_dates?.includes(isoDate)
+      );
+      const isBlockedOrFull = unavailableDatesData.unavailable_dates?.includes(isoDate);
+      const isUnavailable = isTerrenoReserved || isBlockedOrFull;
+
+      const isDisabled = isTooSoon || isNonSaturdayTerreno || isUnavailable;
+      const isSelected = eventDate === isoDate && !isDisabled;
+
+      days.push(
+        <button
+          key={isoDate}
+          type="button"
+          disabled={isDisabled}
+          onClick={() => handleDateSelectChange(isoDate)}
+          className={`h-9 text-xs font-mono font-bold rounded-lg transition-all flex flex-col items-center justify-center relative border ${
+            isDisabled
+              ? 'bg-red-950/25 text-red-400 border-red-500/30 line-through cursor-not-allowed opacity-60'
+              : isSelected
+              ? 'bg-[#D9822B] text-white border-[#E5C384] shadow-md scale-105 font-extrabold z-10'
+              : 'bg-[#1A120C] text-[#FAF6F0] border-[#D9822B]/30 hover:border-[#D9822B] hover:bg-[#D9822B]/20 hover:text-white'
+          }`}
+          title={
+            isUnavailable
+              ? '⛔ Fecha No Disponible (Reservada por otro evento o Bloqueada)'
+              : isNonSaturdayTerreno
+              ? '⚠️ Banquetería en terreno solo los Sábados'
+              : isTooSoon
+              ? '🔒 Se exige mínimo 3 días de anticipación'
+              : `Seleccionar ${ddStr}/${mmStr}/${year}`
+          }
+        >
+          <span>{d}</span>
+          {isUnavailable && (
+            <span className="text-[7px] text-red-400 no-underline leading-none">⛔</span>
+          )}
+        </button>
+      );
+    }
+
+    return days;
   };
 
   useEffect(() => {
@@ -96,7 +309,8 @@ export default function ServiceCheckoutModal({
   
   // Delivery Fee safely calculated
   const communeObj = communes.find(c => c.name === selectedCommune);
-  const deliveryFee = (serviceType !== 'RETIRO' && communeObj && communeObj.fee) ? (parseInt(communeObj.fee) || 0) : 0;
+  const rawCommuneFee = communeObj ? (communeObj.delivery_fee !== undefined ? communeObj.delivery_fee : communeObj.fee) : 0;
+  const deliveryFee = (serviceType !== 'RETIRO' && communeObj) ? (parseInt(rawCommuneFee) || 0) : 0;
   
   // Waiters calculation safely calculated using dynamic waiter_fee
   const waitersCount = serviceType === 'SERVICIO_COMPLETO' ? Math.max(1, Math.ceil(guestsCount / 25)) : 0;
@@ -169,7 +383,7 @@ export default function ServiceCheckoutModal({
     setCouponError('');
     if (!couponCode.trim()) return;
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/coupons/validate/', {
+      const res = await fetch(`${API_BASE_URL}/coupons/validate/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: couponCode })
@@ -189,11 +403,11 @@ export default function ServiceCheckoutModal({
     }
   };
 
-  const validateStep2 = () => {
+  const handleNextStep2 = async () => {
     setErrorMessage('');
     if (!eventDate) {
       setErrorMessage('Por favor selecciona una fecha para tu servicio.');
-      return false;
+      return;
     }
 
     const selectedDateObj = new Date(eventDate + 'T00:00:00');
@@ -203,20 +417,27 @@ export default function ServiceCheckoutModal({
     
     if (diffDays < 3) {
       setErrorMessage('Se exige un mínimo de 3 días de anticipación para realizar reservas.');
-      return false;
+      return;
     }
 
     if ((serviceType === 'MONTAJE_SOLO' || serviceType === 'SERVICIO_COMPLETO') && selectedDateObj.getDay() !== 6) {
       setErrorMessage('Los servicios de montaje decorativo y con garzones en terreno solo pueden realizarse los días Sábado.');
-      return false;
+      return;
     }
 
-    return true;
-  };
-
-  const handleNextStep2 = () => {
-    if (validateStep2()) {
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/orders/check_availability/?date=${eventDate}&service_type=${serviceType}&portions=${totalPortionsInCart}`);
+      const data = await res.json();
+      if (!res.ok || !data.available) {
+        setErrorMessage(data.reason || data.error || 'La fecha seleccionada no está disponible.');
+        return;
+      }
       setStep(3);
+    } catch (err) {
+      setStep(3);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -325,7 +546,7 @@ export default function ServiceCheckoutModal({
     };
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/orders/', {
+      const res = await fetch(`${API_BASE_URL}/orders/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -645,32 +866,101 @@ export default function ServiceCheckoutModal({
                 </div>
               )}
 
-              {/* Date & Time Slot */}
+              {/* INTERACTIVE CUSTOM CALENDAR (PROACTIVE GREYED-OUT DATES) */}
+              <div className="bg-[#120B07] p-5 rounded-2xl border border-[#D9822B]/30 space-y-4 shadow-xl">
+                <div className="flex justify-between items-center border-b border-[#D9822B]/20 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-[#E5C384]" />
+                    <h5 className="font-serif font-bold text-sm text-[#FAF6F0]">
+                      Calendario de Disponibilidad
+                    </h5>
+                  </div>
+                  
+                  {/* Month Navigation */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handlePrevMonth}
+                      className="p-1.5 rounded-lg bg-[#1A120C] text-[#E5C384] hover:bg-[#D9822B]/20 border border-[#D9822B]/30 transition-all"
+                      title="Mes anterior"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    
+                    <span className="font-serif text-xs font-bold text-[#E5C384] min-w-[120px] text-center capitalize">
+                      {currentCalendarDate.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={handleNextMonth}
+                      className="p-1.5 rounded-lg bg-[#1A120C] text-[#E5C384] hover:bg-[#D9822B]/20 border border-[#D9822B]/30 transition-all"
+                      title="Mes siguiente"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Day Headers (Lu, Ma, Mi, Ju, Vi, Sá, Do) */}
+                <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-[#E5C384] font-serif uppercase tracking-wider pb-1">
+                  <div>Lu</div>
+                  <div>Ma</div>
+                  <div>Mi</div>
+                  <div>Ju</div>
+                  <div>Vi</div>
+                  <div>Sá</div>
+                  <div>Do</div>
+                </div>
+
+                {/* Calendar Days Grid */}
+                <div className="grid grid-cols-7 gap-1">
+                  {renderCalendarDays()}
+                </div>
+
+                {/* Legend / Leyenda de Estados */}
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] pt-3 border-t border-[#D9822B]/15 text-[#A6988B]">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded bg-[#1A120C] border border-[#D9822B]/50 inline-block"></span>
+                    <span>Disponible</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded bg-[#D9822B] inline-block"></span>
+                    <span>Seleccionado</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded bg-[#120B07]/70 border border-[#D9822B]/20 inline-block"></span>
+                    <span>No disponible</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Time Slot & Native Input Fallback */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-[#A6988B] block mb-1 font-semibold">Fecha del Evento / Retiro</label>
+                  <label className="text-xs text-[#A6988B] block mb-1 font-semibold">Bloque Horario Preferido</label>
+                  <select
+                    value={timeSlot}
+                    onChange={(e) => setTimeSlot(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
+                  >
+                    {availableTimeSlots.map((slot, idx) => (
+                      <option key={idx} value={slot}>
+                        {slot.includes('hrs') || slot.includes('Horas') ? slot : `${slot} hrs`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs text-[#A6988B] block mb-1 font-semibold">Fecha Seleccionada</label>
                   <input 
                     type="date"
                     min={getMinDate()}
                     value={eventDate}
-                    onChange={(e) => setEventDate(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs text-[#FAF6F0]"
+                    onChange={(e) => handleDateSelectChange(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
                   />
-                  <span className="text-[10px] text-[#A6988B] mt-1 block">Mínimo 3 días hábiles de anticipación.</span>
-                </div>
-
-                <div>
-                  <label className="text-xs text-[#A6988B] block mb-1 font-semibold">Bloque Horario</label>
-                  <select
-                    value={timeSlot}
-                    onChange={(e) => setTimeSlot(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs text-[#FAF6F0]"
-                  >
-                    <option value="10:00 - 12:00">10:00 - 12:00 hrs</option>
-                    <option value="12:00 - 14:00">12:00 - 14:00 hrs</option>
-                    <option value="14:00 - 16:00">14:00 - 16:00 hrs</option>
-                    <option value="16:00 - 18:00">16:00 - 18:00 hrs</option>
-                  </select>
                 </div>
               </div>
 
@@ -803,7 +1093,9 @@ export default function ServiceCheckoutModal({
                     >
                       <option value="">Selecciona tu comuna...</option>
                       {communes.map(c => (
-                        <option key={c.name} value={c.name}>{c.name} (+${parseInt(c.fee).toLocaleString('es-CL')} despacho)</option>
+                        <option key={c.id || c.name} value={c.name}>
+                          {c.name}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -849,6 +1141,50 @@ export default function ServiceCheckoutModal({
                 </span>
               </div>
 
+              {/* Order & Service Breakdown Summary */}
+              <div className="bg-[#120B07] p-4 rounded-xl border border-[#D9822B]/30 text-xs space-y-2.5">
+                <h5 className="font-serif font-bold text-[#E5C384] text-sm border-b border-[#D9822B]/20 pb-2">
+                  Resumen de la Solicitud & Servicio
+                </h5>
+                <div className="space-y-1 text-[#FAF6F0]">
+                  <p><span className="text-[#A6988B]">Modalidad:</span> <strong className="text-[#E5C384]">{serviceType === 'RETIRO' ? 'Retiro en Local' : serviceType === 'MONTAJE_SOLO' ? 'Montaje Decorativo en Terreno' : 'Servicio Completo con Garzones'}</strong></p>
+                  <p><span className="text-[#A6988B]">Fecha y Bloque:</span> <strong>{eventDate || 'Por definir'} ({timeSlot} hrs)</strong></p>
+                  {serviceType !== 'RETIRO' && (
+                    <p><span className="text-[#A6988B]">Lugar de Entrega / Montaje:</span> <strong>{address}, {selectedCommune}</strong></p>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-[#D9822B]/20 space-y-1 font-mono text-xs">
+                  <div className="flex justify-between text-[#A6988B]">
+                    <span>Productos en Carrito (Subtotal):</span>
+                    <span>${safeItemsTotal.toLocaleString('es-CL')} CLP</span>
+                  </div>
+                  {serviceType !== 'RETIRO' && (
+                    <div className="flex justify-between text-[#A6988B]">
+                      <span>Traslado & Logística en Terreno ({selectedCommune}):</span>
+                      <span>+${safeDeliveryFee.toLocaleString('es-CL')} CLP</span>
+                    </div>
+                  )}
+                  {waitersCount > 0 && (
+                    <div className="flex justify-between text-[#A6988B]">
+                      <span>Servicio de Garzones ({waitersCount} garzón/es x 4 hrs):</span>
+                      <span>+${safeWaitersFee.toLocaleString('es-CL')} CLP</span>
+                    </div>
+                  )}
+                  {safeDiscount > 0 && (
+                    <div className="flex justify-between text-green-400 font-bold">
+                      <span>Descuento Cupón Bienvenida (5%):</span>
+                      <span>-${safeDiscount.toLocaleString('es-CL')} CLP</span>
+                    </div>
+                  )}
+                  <div className="pt-2 border-t border-[#D9822B]/30 flex justify-between items-center text-sm text-[#E5C384] font-bold">
+                    <span>Monto Final a Transferir:</span>
+                    <span className="text-base font-mono">${finalTotal.toLocaleString('es-CL')} CLP</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bank Transfer Details */}
               <div className="bg-[#120B07] p-4 rounded-xl border border-[#D9822B]/20 text-xs space-y-2">
                 <h5 className="font-serif font-bold text-[#E5C384] text-sm mb-2">Datos para Transferencia Bancaria Directa</h5>
                 <p><span className="text-[#A6988B]">Banco:</span> Banco de Chile</p>
@@ -857,9 +1193,6 @@ export default function ServiceCheckoutModal({
                 <p><span className="text-[#A6988B]">Titular:</span> Banquetería Lina SpA / Lina Ramírez</p>
                 <p><span className="text-[#A6988B]">Rut:</span> 77.890.123-4</p>
                 <p><span className="text-[#A6988B]">Correo de Pago:</span> pagos@banqueterialina.cl</p>
-                <div className="pt-2 border-t border-[#D9822B]/20 font-bold text-sm text-[#E5C384]">
-                  Monto Final a Transferir: ${finalTotal.toLocaleString('es-CL')} CLP
-                </div>
               </div>
 
               {/* REAL HTML5 DRAG & DROP INTERCEPTOR ZONE */}

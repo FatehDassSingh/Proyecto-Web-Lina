@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_BASE_URL from './config/api';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import FeaturedGrid from './components/FeaturedGrid';
@@ -35,25 +36,79 @@ export default function App() {
   const [businessConfig, setBusinessConfig] = useState({
     waiter_fee: 20000,
     min_order_total: 70000,
-    max_daily_portions: 250
+    max_daily_portions: 250,
+    contact_phone: '+56 9 3465 6961',
+    contact_email: 'contacto@banqueterialina.cl',
+    business_hours: 'Lunes a Domingo de 09:00 a 19:00 hrs',
+    terms_and_conditions: '',
+    time_slots: '10:00 - 12:00, 12:00 - 14:00, 14:00 - 16:00, 16:00 - 18:00'
   });
+  const [visitStats, setVisitStats] = useState({ total_visits: 1042, visits_today: 38, total_uniques: 420 });
+
+  const trackVisit = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/visits/track/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: window.location.pathname || '/' })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setVisitStats(data);
+      }
+    } catch (e) {
+      console.log("Visit counter fallback active");
+    }
+  };
 
   // Fetch Menu, Communes, and BusinessConfig from Django API
   useEffect(() => {
     fetchMenuData();
     fetchCommunesData();
     fetchBusinessConfig();
+    trackVisit();
+
+    const checkUrlOrHash = () => {
+      const hash = window.location.hash;
+      const path = window.location.pathname;
+      if (hash === '#admin' || path === '/admin') {
+        setIsAdminOpen(true);
+      }
+    };
+
+    checkUrlOrHash();
+    window.addEventListener('hashchange', checkUrlOrHash);
+    window.addEventListener('popstate', checkUrlOrHash);
+
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        setIsAdminOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('hashchange', checkUrlOrHash);
+      window.removeEventListener('popstate', checkUrlOrHash);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const fetchBusinessConfig = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/config/');
+      const res = await fetch(`${API_BASE_URL}/config/`);
       const data = await res.json();
       if (data && typeof data === 'object') {
         setBusinessConfig({
           waiter_fee: Number(data.waiter_fee) || 20000,
           min_order_total: Number(data.min_order_total) || 70000,
-          max_daily_portions: Number(data.max_daily_portions) || 250
+          max_daily_portions: Number(data.max_daily_portions) || 250,
+          contact_phone: data.contact_phone || '+56 9 3465 6961',
+          contact_email: data.contact_email || 'contacto@banqueterialina.cl',
+          business_hours: data.business_hours || 'Lunes a Domingo de 09:00 a 19:00 hrs',
+          terms_and_conditions: data.terms_and_conditions || '',
+          time_slots: data.time_slots || '10:00 - 12:00, 12:00 - 14:00, 14:00 - 16:00, 16:00 - 18:00'
         });
       }
     } catch (e) {
@@ -63,7 +118,7 @@ export default function App() {
 
   const fetchMenuData = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/menu/');
+      const res = await fetch(`${API_BASE_URL}/menu/`);
       const data = await res.json();
       if (data.items && data.items.length > 0) {
         setCategories(data.categories || []);
@@ -78,7 +133,7 @@ export default function App() {
 
   const fetchCommunesData = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/communes/');
+      const res = await fetch(`${API_BASE_URL}/communes/`);
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
         setCommunes(data);
@@ -161,6 +216,7 @@ export default function App() {
             <FeaturedGrid 
               featuredItems={featuredItems}
               onAddToCart={handleAddToCart}
+              onNavigateToCarta={() => handleNavigate('carta')}
             />
             <QuienesSomosSection onNavigateToCarta={() => handleNavigate('carta')} />
           </>
@@ -181,16 +237,16 @@ export default function App() {
         )}
 
         {activePage === 'contacto' && (
-          <ContactoPage />
+          <ContactoPage businessConfig={businessConfig} />
         )}
 
         {activePage === 'terminos' && (
-          <TerminosPage onNavigateHome={() => handleNavigate('home')} />
+          <TerminosPage onNavigateHome={() => handleNavigate('home')} businessConfig={businessConfig} />
         )}
       </main>
 
       {/* Footer & Schema.org */}
-      <Footer onNavigate={handleNavigate} />
+      <Footer onNavigate={handleNavigate} onOpenAdmin={() => setIsAdminOpen(true)} visitStats={visitStats} />
 
       {/* Floating 5% Discount Bar */}
       <DiscountBanner onOpenModal={() => setIsDiscountOpen(true)} />
@@ -219,6 +275,7 @@ export default function App() {
         onClose={() => setIsAdminOpen(false)}
         onConfigSaved={fetchBusinessConfig}
         onCatalogChanged={fetchMenuData}
+        onCommunesChanged={fetchCommunesData}
       />
 
       {/* Marketing Assets & QR Modal */}
