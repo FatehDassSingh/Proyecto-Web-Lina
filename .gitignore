@@ -15,6 +15,7 @@ frontend/dist/
 __pycache__/
 backend/__pycache__/
 *.pyc
+backend/staticfiles/
 
 # Media & Uploads
 media/

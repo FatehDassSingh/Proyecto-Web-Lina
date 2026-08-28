@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { X, ShieldCheck, Lock, RefreshCw, CheckCircle, XCircle, Clock, Edit2, Eye, History, FileText, Save, CheckCircle2, Upload, AlertTriangle, DollarSign, Plus, Trash2, Layers, Package, Search, Download, CreditCard, ShoppingBag, Mail, Sliders, Calendar, CalendarX, Unlock, Key, LogOut, ChevronLeft, ChevronRight, Send, Users, Phone, UserCheck, ShoppingBasket, Image as ImageIcon, Link as LinkIcon, Minus, Type, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react';
+import { X, ShieldCheck, Lock, RefreshCw, CheckCircle, XCircle, Clock, Edit2, Eye, History, FileText, Save, CheckCircle2, Upload, AlertTriangle, DollarSign, Plus, Trash2, Layers, Package, Search, Download, CreditCard, ShoppingBag, Mail, Sliders, Calendar, CalendarX, Unlock, Key, LogOut, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Send, Users, Phone, UserCheck, ShoppingBasket, Image as ImageIcon, Link as LinkIcon, Minus, Type, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify, UtensilsCrossed, Palette, Tag, MapPin } from 'lucide-react';
 import API_BASE_URL from '../config/api';
 
 const CHILE_REGIONS = [
@@ -98,7 +98,7 @@ const RichTextEditor = ({ value, onChange }) => {
     <div className="space-y-3 border border-[#D9822B]/30 rounded-2xl bg-[#120B07] p-4 shadow-xl">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-[#D9822B]/20 pb-3">
         <div>
-          <label className="font-serif font-bold text-sm text-[#E5C384] flex items-center gap-2">
+          <label className="font-sans font-bold text-sm text-[#E5C384] flex items-center gap-2">
             📜 Editor Enriquecido de Términos y Condiciones (WYSIWYG Estilo Word)
           </label>
           <p className="text-xs text-[#A6988B]">
@@ -305,7 +305,7 @@ const RichTextEditor = ({ value, onChange }) => {
       {imageModalOpen && (
         <div className="fixed inset-0 z-80 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#1D150F] border border-[#D9822B]/40 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl">
-            <h4 className="font-serif text-base font-bold text-[#E5C384]">Insertar Imagen en Términos y Condiciones</h4>
+            <h4 className="font-sans text-base font-bold text-[#E5C384]">Insertar Imagen en Términos y Condiciones</h4>
             <div className="space-y-3 text-xs">
               <div>
                 <label className="text-[#FAF6F0] font-semibold block mb-1">URL de la Imagen (HTTPS) *</label>
@@ -568,6 +568,124 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
   const [clientFilterType, setClientFilterType] = useState('ALL'); // 'ALL' | 'FREQUENT' | 'WITH_ORDERS' | 'WITH_REFUNDS' | 'LEADS_ONLY'
   const [selectedClientModal, setSelectedClientModal] = useState(null);
 
+  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState(null);
+  const [clientForm, setClientForm] = useState({
+    first_name: '',
+    last_name_paternal: '',
+    last_name_maternal: '',
+    rut_body: '',
+    rut_dv: '',
+    email: '',
+    phone: '',
+    commune_id: '',
+    address: '',
+    city: 'Santiago',
+    region: 'Región Metropolitana de Santiago',
+    country: 'Chile'
+  });
+  const [clientFormMsg, setClientFormMsg] = useState({ type: '', text: '' });
+  const [isSavingClient, setIsSavingClient] = useState(false);
+
+  const openNewClientModal = () => {
+    setEditingClient(null);
+    setClientForm({
+      first_name: '',
+      last_name_paternal: '',
+      last_name_maternal: '',
+      rut_body: '',
+      rut_dv: '',
+      email: '',
+      phone: '',
+      commune_id: '',
+      address: '',
+      city: 'Santiago',
+      region: 'Región Metropolitana de Santiago',
+      country: 'Chile'
+    });
+    setClientFormMsg({ type: '', text: '' });
+    setIsClientModalOpen(true);
+  };
+
+  const openEditClientModal = (client) => {
+    setEditingClient(client);
+    setClientForm({
+      first_name: client.first_name || '',
+      last_name_paternal: client.last_name_paternal || '',
+      last_name_maternal: client.last_name_maternal || '',
+      rut_body: client.rut_body || '',
+      rut_dv: client.rut_dv || '',
+      email: client.email || '',
+      phone: client.phone || '',
+      commune_id: client.commune_id || '',
+      address: client.address || '',
+      city: client.city || 'Santiago',
+      region: client.region || 'Región Metropolitana de Santiago',
+      country: client.country || 'Chile'
+    });
+    setClientFormMsg({ type: '', text: '' });
+    setIsClientModalOpen(true);
+  };
+
+  const handleSaveClientSubmit = async (e) => {
+    e.preventDefault();
+    if (!clientForm.email) {
+      setClientFormMsg({ type: 'error', text: 'El correo electrónico es obligatorio.' });
+      return;
+    }
+    setIsSavingClient(true);
+    setClientFormMsg({ type: '', text: '' });
+
+    const url = editingClient 
+      ? `${API_BASE_URL}/admin/clients/${editingClient.id}/`
+      : `${API_BASE_URL}/admin/clients/create/`;
+    const method = editingClient ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(clientForm)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setClientFormMsg({ type: 'success', text: data.message || 'Cliente guardado exitosamente.' });
+        const resClients = await fetch(`${API_BASE_URL}/admin/clients/`);
+        if (resClients.ok) {
+          const freshClients = await resClients.json();
+          setClients(freshClients);
+        }
+        setTimeout(() => {
+          setIsClientModalOpen(false);
+          setEditingClient(null);
+        }, 1000);
+      } else {
+        setClientFormMsg({ type: 'error', text: data.error || 'Error al guardar el cliente.' });
+      }
+    } catch (err) {
+      setClientFormMsg({ type: 'error', text: 'Error de conexión con el servidor.' });
+    } finally {
+      setIsSavingClient(false);
+    }
+  };
+
+  const handleDeleteClient = async (clientId) => {
+    if (!window.confirm('¿Está seguro de eliminar este cliente del directorio 3NF?')) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/clients/${clientId}/`, { method: 'DELETE' });
+      if (res.ok) {
+        setClients(prev => prev.filter(c => c.id !== clientId));
+        if (selectedClientModal && selectedClientModal.id === clientId) {
+          setSelectedClientModal(null);
+        }
+      } else {
+        alert('Error al eliminar el cliente.');
+      }
+    } catch (e) {
+      alert('Error de conexión.');
+    }
+  };
+
   const filteredClients = useMemo(() => {
     return clients.filter(c => {
       // Filter Type
@@ -580,11 +698,19 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
       if (clientSearch.trim()) {
         const query = clientSearch.trim().toLowerCase();
         const searchable = [
+          c.first_name || '',
+          c.last_name_paternal || '',
+          c.last_name_maternal || '',
+          c.full_name || '',
           c.client_name || '',
+          c.rut_body || '',
+          c.rut_dv || '',
+          c.formatted_rut || '',
           c.rut || '',
           c.email || '',
           c.phone || '',
           c.address || '',
+          c.commune_name || '',
           c.coupon_code || ''
         ].join(' ').toLowerCase();
 
@@ -605,7 +731,32 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
     contact_email: 'contacto@banqueterialina.cl',
     business_hours: 'Lunes a Domingo de 09:00 a 19:00 hrs',
     terms_and_conditions: '',
-    time_slots: '10:00 - 12:00, 12:00 - 14:00, 14:00 - 16:00, 16:00 - 18:00'
+    time_slots: '10:00 - 12:00, 12:00 - 14:00, 14:00 - 16:00, 16:00 - 18:00',
+    site_logo: '/images/logo_lina.png',
+    site_favicon: '/images/logo_lina.png',
+    hero_title: 'El arte de comer rico',
+    hero_subtitle: 'Presentaciones gourmet artesanales, montajes decorativos y garzones para tus momentos inolvidables.',
+    hero_badge_text: 'Banquetería Familiar en Santiago de Chile',
+    show_hero_badge: 'true',
+    show_hero_cards: 'true',
+    hero_card1_title: '3 Días de Anticipación',
+    hero_card1_desc: 'Elaboración artesanal fresca con reserva previa.',
+    hero_card2_title: 'Retiro o Montaje Sábados',
+    hero_card2_desc: 'Retiro presencial Lun-Dom; montajes los Sábados.',
+    hero_card3_title: 'Opción Garzones',
+    hero_card3_desc: 'Cálculo automático de personal (1 cada 25 personas).',
+    show_about_section: 'true',
+    about_badge_text: 'Nuestra Historia & Familia',
+    about_title: '¿Quiénes Somos?',
+    about_quote: '"Somos la familia Quilodrán y nos encanta dar una experiencia gastronómica acogedora. Orgullosamente de San Bernardo."',
+    about_paragraph1: 'Lo que comenzó en nuestra propia cocina como el amor por reunir a nuestros seres queridos en torno a la mesa, hoy se transforma en Banquetería Lina. Creemos firmemente que la buena mesa no es solo comida: es empatía, calidez y momentos inolvidables compartidos con las personas que más quieres.',
+    about_paragraph2: 'Cada empanadita horneada al punto, cada tabla gourmet montada a mano y cada estación de café lleva el sello de dedicación de nuestra familia. Nos encargamos personalmente de cada banquete para que tú solo te dediques a disfrutar como un anfitrión radiante.',
+    about_image_url: '/images/estacion_coffee.jpg',
+    theme_color_primary: '#D9822B',
+    theme_color_secondary: '#E5C384',
+    theme_color_bg: '#120B07',
+    theme_color_card: '#1A120C',
+    theme_color_text: '#FAF6F0'
   });
   const [configHistory, setConfigHistory] = useState([]);
   const [configSuccessMsg, setConfigSuccessMsg] = useState('');
@@ -613,8 +764,124 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
   const [isSavingConfig, setIsSavingConfig] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [visitData, setVisitData] = useState({ total_visits: 0, total_uniques: 0, visits_today: 0, logs: [] });
-  const [settingsSubCategory, setSettingsSubCategory] = useState('all'); // 'all' | 'terms' | 'time_slots' | 'limits' | 'contact' | 'audit'
+  const [visitChartPeriod, setVisitChartPeriod] = useState('daily_7'); // 'daily_7' | 'monthly_12' | 'yearly'
+  const [settingsSubCategory, setSettingsSubCategory] = useState('appearance'); // 'appearance' | 'all' | 'terms' | 'time_slots' | 'limits' | 'contact' | 'audit'
   const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(true);
+
+  // Logo file drag and upload state
+  const [isLogoDragging, setIsLogoDragging] = useState(false);
+  const logoFileInputRef = useRef(null);
+
+  // About image file drag and upload state
+  const [isAboutDragging, setIsAboutDragging] = useState(false);
+  const aboutImageFileInputRef = useRef(null);
+
+  // Favicon file drag and upload state
+  const [isFaviconDragging, setIsFaviconDragging] = useState(false);
+  const faviconFileInputRef = useRef(null);
+
+  // Accordion state for all Configuración & Calendario sections (all collapsed by default)
+  const [openAccordions, setOpenAccordions] = useState({
+    palette: false,
+    logo: false,
+    hero: false,
+    about: false,
+    blockDates: false,
+    limits: false,
+    contact: false,
+    timeSlots: false,
+    terms: false,
+    communes: false,
+    auditHistory: false
+  });
+
+  const toggleAccordion = (key) => {
+    setOpenAccordions(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  // Live real-time updates of site theme variables and favicon when editing in Admin
+  useEffect(() => {
+    if (config) {
+      const primary = config.theme_color_primary || '#D9822B';
+      const secondary = config.theme_color_secondary || '#E5C384';
+      const bg = config.theme_color_bg || '#120B07';
+      const card = config.theme_color_card || '#1A120C';
+      const text = config.theme_color_text || '#FAF6F0';
+
+      const root = document.documentElement.style;
+      root.setProperty('--amber-primary', primary);
+      root.setProperty('--amber-hover', primary);
+      root.setProperty('--gold-accent', secondary);
+      root.setProperty('--wheat-light', secondary);
+      root.setProperty('--bg-dark', bg);
+      root.setProperty('--bg-card', card);
+      root.setProperty('--bg-modal', card);
+      root.setProperty('--bg-card-hover', card);
+      root.setProperty('--cream-text', text);
+      root.setProperty('--muted-text', `color-mix(in srgb, ${text} 65%, transparent)`);
+      root.setProperty('--border-amber', `color-mix(in srgb, ${primary} 30%, transparent)`);
+      root.setProperty('--border-amber-strong', `color-mix(in srgb, ${primary} 65%, transparent)`);
+      root.setProperty('--shadow-glow', `0 0 25px color-mix(in srgb, ${primary} 30%, transparent)`);
+    }
+
+    if (config?.site_favicon) {
+      const favUrl = config.site_favicon;
+      const links = document.querySelectorAll("link[rel*='icon']");
+      if (links.length > 0) {
+        links.forEach(l => l.href = favUrl);
+      } else {
+        const link = document.createElement('link');
+        link.rel = 'icon';
+        link.href = favUrl;
+        document.head.appendChild(link);
+      }
+    }
+  }, [config.theme_color_primary, config.theme_color_secondary, config.theme_color_bg, config.theme_color_card, config.theme_color_text, config.site_favicon]);
+
+  const handleFaviconFileSelect = (file) => {
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("La imagen del favicon es muy grande. El tamaño máximo recomendado es 5 MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setConfig(prev => ({ ...prev, site_favicon: e.target.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleLogoFileSelect = (file) => {
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("La imagen del logo es muy grande. El tamaño máximo recomendado es 5 MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setConfig(prev => ({ ...prev, site_logo: e.target.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAboutImageFileSelect = (file) => {
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("La imagen es muy grande. El tamaño máximo recomendado es 5 MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setConfig(prev => ({ ...prev, about_image_url: e.target.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const fetchAdminVisits = async () => {
     try {
@@ -1195,7 +1462,32 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
             contact_email: cfgObj.contact_email || 'contacto@banqueterialina.cl',
             business_hours: cfgObj.business_hours || 'Lunes a Domingo de 09:00 a 19:00 hrs',
             terms_and_conditions: cfgObj.terms_and_conditions || '',
-            time_slots: cfgObj.time_slots || '10:00 - 12:00, 12:00 - 14:00, 14:00 - 16:00, 16:00 - 18:00'
+            time_slots: cfgObj.time_slots || '10:00 - 12:00, 12:00 - 14:00, 14:00 - 16:00, 16:00 - 18:00',
+            site_logo: cfgObj.site_logo || '/images/logo_lina.png',
+            site_favicon: cfgObj.site_favicon || '/images/logo_lina.png',
+            hero_title: cfgObj.hero_title || 'El arte de comer rico',
+            hero_subtitle: cfgObj.hero_subtitle || 'Presentaciones gourmet artesanales, montajes decorativos y garzones para tus momentos inolvidables.',
+            hero_badge_text: cfgObj.hero_badge_text || 'Banquetería Familiar en Santiago de Chile',
+            show_hero_badge: cfgObj.show_hero_badge ?? 'true',
+            show_hero_cards: cfgObj.show_hero_cards ?? 'true',
+            hero_card1_title: cfgObj.hero_card1_title || '3 Días de Anticipación',
+            hero_card1_desc: cfgObj.hero_card1_desc || 'Elaboración artesanal fresca con reserva previa.',
+            hero_card2_title: cfgObj.hero_card2_title || 'Retiro o Montaje Sábados',
+            hero_card2_desc: cfgObj.hero_card2_desc || 'Retiro presencial Lun-Dom; montajes los Sábados.',
+            hero_card3_title: cfgObj.hero_card3_title || 'Opción Garzones',
+            hero_card3_desc: cfgObj.hero_card3_desc || 'Cálculo automático de personal (1 cada 25 personas).',
+            show_about_section: cfgObj.show_about_section ?? 'true',
+            about_badge_text: cfgObj.about_badge_text || 'Nuestra Historia & Familia',
+            about_title: cfgObj.about_title || '¿Quiénes Somos?',
+            about_quote: cfgObj.about_quote || '"Somos la familia Quilodrán y nos encanta dar una experiencia gastronómica acogedora. Orgullosamente de San Bernardo."',
+            about_paragraph1: cfgObj.about_paragraph1 || 'Lo que comenzó en nuestra propia cocina como el amor por reunir a nuestros seres queridos en torno a la mesa, hoy se transforma en Banquetería Lina.',
+            about_paragraph2: cfgObj.about_paragraph2 || 'Cada empanadita horneada al punto, cada tabla gourmet montada a mano y cada estación de café lleva el sello de dedicación de nuestra familia.',
+            about_image_url: cfgObj.about_image_url || '/images/estacion_coffee.jpg',
+            theme_color_primary: cfgObj.theme_color_primary || '#D9822B',
+            theme_color_secondary: cfgObj.theme_color_secondary || '#E5C384',
+            theme_color_bg: cfgObj.theme_color_bg || '#120B07',
+            theme_color_card: cfgObj.theme_color_card || '#1A120C',
+            theme_color_text: cfgObj.theme_color_text || '#FAF6F0'
           });
           if (Array.isArray(dataConfig.history)) {
             setConfigHistory(dataConfig.history);
@@ -1593,18 +1885,18 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-      <div className="glass-panel w-full max-w-6xl overflow-hidden shadow-2xl relative my-auto min-h-[82vh] flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto font-sans">
+      <div className="glass-panel w-full max-w-6xl overflow-hidden shadow-2xl relative my-auto min-h-[82vh] flex flex-col font-sans">
         
         {/* Content */}
         {!isAuthenticated ? (
           <div className="flex-1 flex flex-col justify-center">
-            <div className="bg-[#1A120C] px-6 py-4 border-b border-[#D9822B]/20 flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="bg-[#1A120C] px-6 py-4 border-b border-[#D9822B]/20 flex items-center justify-center relative">
+              <div className="flex items-center gap-2 text-center">
                 <ShieldCheck className="w-5 h-5 text-[#E5C384]" />
-                <h3 className="font-serif text-lg font-bold text-[#FAF6F0]">Panel de Administración - Banquetería Lina</h3>
+                <h3 className="font-sans text-lg font-bold text-[#FAF6F0]">Panel de Administración</h3>
               </div>
-              <button onClick={onClose} className="p-1 text-[#A6988B] hover:text-[#FAF6F0]" title="Cerrar ventana">
+              <button onClick={onClose} className="p-1 text-[#A6988B] hover:text-[#FAF6F0] absolute right-6 top-1/2 -translate-y-1/2" title="Cerrar ventana">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1613,16 +1905,14 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
               <div className="w-16 h-16 rounded-full bg-[#D9822B]/15 border border-[#D9822B]/40 text-[#E5C384] flex items-center justify-center mb-4">
                 <Lock className="w-8 h-8" />
               </div>
-              <h4 className="font-serif text-xl font-bold text-[#FAF6F0] mb-1">Acceso a la Administración</h4>
-              <p className="text-xs text-[#A6988B] mb-6">Ingresa tu RUT (con o sin puntos y guión) y tu contraseña de acceso.</p>
+              <h4 className="font-sans text-xl font-bold text-[#FAF6F0] mb-6">Panel de Administración</h4>
               
               <form onSubmit={handleLogin} className="w-full space-y-4 text-left">
                 <div>
-                  <label className="text-xs text-[#E5C384] block mb-1 font-bold">RUT de Administrador *</label>
+                  <label className="text-xs text-[#E5C384] block mb-1 font-bold">RUT *</label>
                   <input 
                     type="text"
                     required
-                    placeholder="Ej: 12.345.678-9 o 12345678-9"
                     value={loginUsername}
                     onChange={(e) => setLoginUsername(e.target.value)}
                     className="w-full px-4 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-sm text-[#FAF6F0] font-mono focus:outline-none focus:border-[#D9822B]"
@@ -1659,7 +1949,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                 {loginError && <p className="text-xs text-red-400 font-semibold">{loginError}</p>}
                 
                 <button type="submit" className="btn-primary w-full py-3 text-xs font-bold mt-2">
-                  Ingresar al Dashboard
+                  Ingresar
                 </button>
               </form>
             </div>
@@ -1677,7 +1967,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                     <ShieldCheck className="w-5 h-5 text-[#D9822B]" />
                   </div>
                   <div>
-                    <h3 className="font-serif text-sm font-bold text-[#FAF6F0] leading-tight">Banquetería Lina</h3>
+                    <h3 className="font-sans text-sm font-bold text-[#FAF6F0] leading-tight">Banquetería Lina</h3>
                     <p className="text-[10px] text-[#A6988B] font-mono uppercase tracking-wider">Panel Admin</p>
                   </div>
                 </div>
@@ -1685,10 +1975,10 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                 {/* HIERARCHICAL NAVIGATION SECTIONS */}
                 <nav className="space-y-5">
                   
-                  {/* CATEGORY 1: OPERACIONES & AUDITORIA */}
+                  {/* CATEGORY 1: OPERACIONES */}
                   <div className="space-y-1.5">
                     <span className="px-3 text-xs font-bold uppercase tracking-wider text-[#E5C384] block mb-1 font-sans border-b border-[#D9822B]/15 pb-1">
-                      Operaciones & Ventas
+                      Operaciones
                     </span>
                     
                     <button 
@@ -1701,47 +1991,13 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         <ShoppingBag className="w-4 h-4 text-[#E5C384] group-hover:scale-110 transition-transform shrink-0" />
                         <span>Pedidos</span>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-mono font-bold ${
-                        activeTab === 'orders' ? 'bg-black/30 text-white' : 'bg-[#1A120C] text-[#E5C384] border border-[#D9822B]/30'
-                      }`}>
-                        {orders.length}
-                      </span>
-                    </button>
-
-                    <button 
-                      onClick={() => setActiveTab('audit')}
-                      className={`w-full px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all flex items-center justify-between group ${
-                        activeTab === 'audit' ? 'bg-[#D9822B] text-white font-bold shadow-lg' : 'text-[#D9C4B1] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <History className="w-4 h-4 text-[#E5C384] group-hover:scale-110 transition-transform shrink-0" />
-                        <span>Bitácora Auditoría</span>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-mono font-bold ${
-                        activeTab === 'audit' ? 'bg-black/30 text-white' : 'bg-[#1A120C] text-[#E5C384] border border-[#D9822B]/30'
-                      }`}>
-                        {getFilteredAuditLogs().length}
-                      </span>
-                    </button>
-                  </div>
-
-                  {/* CATEGORY 2: CATALOGO & CALENDARIO */}
-                  <div className="space-y-1.5">
-                    <span className="px-3 text-xs font-bold uppercase tracking-wider text-[#E5C384] block mb-1 font-sans border-b border-[#D9822B]/15 pb-1">
-                      Catálogo & Disponibilidad
-                    </span>
-                    
-                    <button 
-                      onClick={() => setActiveTab('catalog')}
-                      className={`w-full px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all flex items-center justify-between group ${
-                        activeTab === 'catalog' ? 'bg-[#D9822B] text-white font-bold shadow-lg' : 'text-[#D9C4B1] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Package className="w-4 h-4 text-[#E5C384] group-hover:scale-110 transition-transform shrink-0" />
-                        <span>Líneas & Productos</span>
-                      </div>
+                      {orders.filter(o => o.status === 'PENDIENTE' || o.status === 'PENDING').length > 0 && (
+                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-mono font-bold ${
+                          activeTab === 'orders' ? 'bg-black/30 text-white' : 'bg-[#D9822B] text-white shadow'
+                        }`}>
+                          {orders.filter(o => o.status === 'PENDIENTE' || o.status === 'PENDING').length}
+                        </span>
+                      )}
                     </button>
 
                     <button 
@@ -1752,20 +2008,52 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                     >
                       <div className="flex items-center gap-2.5">
                         <Calendar className="w-4 h-4 text-[#E5C384] group-hover:scale-110 transition-transform shrink-0" />
-                        <span>Calendario & Bloqueos</span>
+                        <span>Calendario de Servicio</span>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-mono font-bold ${
-                        activeTab === 'calendar' ? 'bg-black/30 text-white' : 'bg-[#1A120C] text-[#E5C384] border border-[#D9822B]/30'
-                      }`}>
-                        {blockedDates.length}
-                      </span>
                     </button>
                   </div>
 
-                  {/* CATEGORY 3: MARKETING & CRM */}
+                  {/* CATEGORY 2: PRODUCTOS */}
                   <div className="space-y-1.5">
                     <span className="px-3 text-xs font-bold uppercase tracking-wider text-[#E5C384] block mb-1 font-sans border-b border-[#D9822B]/15 pb-1">
-                      Marketing & Clientes
+                      Productos
+                    </span>
+                    
+                    <button 
+                      onClick={() => {
+                        setActiveTab('catalog');
+                        setCatalogSubTab('products');
+                      }}
+                      className={`w-full px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all flex items-center justify-between group ${
+                        activeTab === 'catalog' && catalogSubTab === 'products' ? 'bg-[#D9822B] text-white font-bold shadow-lg' : 'text-[#D9C4B1] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Package className="w-4 h-4 text-[#E5C384] group-hover:scale-110 transition-transform shrink-0" />
+                        <span>Productos</span>
+                      </div>
+                    </button>
+
+                    <button 
+                      onClick={() => {
+                        setActiveTab('catalog');
+                        setCatalogSubTab('categories');
+                      }}
+                      className={`w-full px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all flex items-center justify-between group ${
+                        activeTab === 'catalog' && catalogSubTab === 'categories' ? 'bg-[#D9822B] text-white font-bold shadow-lg' : 'text-[#D9C4B1] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Layers className="w-4 h-4 text-[#E5C384] group-hover:scale-110 transition-transform shrink-0" />
+                        <span>Líneas</span>
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* CATEGORY 3: MARKETING */}
+                  <div className="space-y-1.5">
+                    <span className="px-3 text-xs font-bold uppercase tracking-wider text-[#E5C384] block mb-1 font-sans border-b border-[#D9822B]/15 pb-1">
+                      Marketing
                     </span>
 
                     <button 
@@ -1778,11 +2066,6 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         <Users className="w-4 h-4 text-[#E5C384] group-hover:scale-110 transition-transform shrink-0" />
                         <span>Directorio Clientes</span>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-mono font-bold ${
-                        activeTab === 'clients' ? 'bg-black/30 text-white' : 'bg-[#1A120C] text-[#E5C384] border border-[#D9822B]/30'
-                      }`}>
-                        {clients.length}
-                      </span>
                     </button>
                     
                     <button 
@@ -1792,31 +2075,9 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <Mail className="w-4 h-4 text-[#E5C384] group-hover:scale-110 transition-transform shrink-0" />
-                        <span>CRM Leads & Cupones</span>
+                        <Tag className="w-4 h-4 text-[#E5C384] group-hover:scale-110 transition-transform shrink-0" />
+                        <span>Cupones Canjeados</span>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-mono font-bold ${
-                        activeTab === 'leads' ? 'bg-black/30 text-white' : 'bg-[#1A120C] text-[#E5C384] border border-[#D9822B]/30'
-                      }`}>
-                        {leads.length}
-                      </span>
-                    </button>
-
-                    <button 
-                      onClick={() => { setActiveTab('visits'); fetchAdminVisits(); }}
-                      className={`w-full px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all flex items-center justify-between group ${
-                        activeTab === 'visits' ? 'bg-[#D9822B] text-white font-bold shadow-lg' : 'text-[#D9C4B1] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Eye className="w-4 h-4 text-[#E5C384] group-hover:scale-110 transition-transform shrink-0" />
-                        <span>Tráfico & Contador Visitas</span>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-mono font-bold ${
-                        activeTab === 'visits' ? 'bg-black/30 text-white' : 'bg-[#1A120C] text-[#E5C384] border border-[#D9822B]/30'
-                      }`}>
-                        {visitData.total_visits || 0}
-                      </span>
                     </button>
 
                     <button 
@@ -1835,10 +2096,48 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                     </button>
                   </div>
 
-                  {/* CATEGORY 4: ADMINISTRACION & CONFIGURACION */}
+                  {/* CATEGORY 4: INFORMES */}
                   <div className="space-y-1.5">
                     <span className="px-3 text-xs font-bold uppercase tracking-wider text-[#E5C384] block mb-1 font-sans border-b border-[#D9822B]/15 pb-1">
-                      Sistema & Seguridad
+                      Informes
+                    </span>
+
+                    <button 
+                      onClick={() => { setActiveTab('visits'); fetchAdminVisits(); }}
+                      className={`w-full px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all flex items-center justify-between group ${
+                        activeTab === 'visits' ? 'bg-[#D9822B] text-white font-bold shadow-lg' : 'text-[#D9C4B1] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Eye className="w-4 h-4 text-[#E5C384] group-hover:scale-110 transition-transform shrink-0" />
+                        <span>Visitas</span>
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* CATEGORY 5: SEGURIDAD */}
+                  <div className="space-y-1.5">
+                    <span className="px-3 text-xs font-bold uppercase tracking-wider text-[#E5C384] block mb-1 font-sans border-b border-[#D9822B]/15 pb-1">
+                      Seguridad
+                    </span>
+
+                    <button 
+                      onClick={() => setActiveTab('audit')}
+                      className={`w-full px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all flex items-center justify-between group ${
+                        activeTab === 'audit' ? 'bg-[#D9822B] text-white font-bold shadow-lg' : 'text-[#D9C4B1] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <History className="w-4 h-4 text-[#E5C384] group-hover:scale-110 transition-transform shrink-0" />
+                        <span>Bitácora Auditoría</span>
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* CATEGORY 6: SISTEMA */}
+                  <div className="space-y-1.5">
+                    <span className="px-3 text-xs font-bold uppercase tracking-wider text-[#E5C384] block mb-1 font-sans border-b border-[#D9822B]/15 pb-1">
+                      Sistema
                     </span>
                     
                     <button 
@@ -1851,14 +2150,9 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         <ShieldCheck className="w-4 h-4 text-[#E5C384] group-hover:scale-110 transition-transform shrink-0" />
                         <span>Administradores</span>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-mono font-bold ${
-                        activeTab === 'users' ? 'bg-black/30 text-white' : 'bg-[#1A120C] text-[#E5C384] border border-[#D9822B]/30'
-                      }`}>
-                        {adminUsers.length}
-                      </span>
                     </button>
 
-                    {/* REGLAS OPERATIVAS DESPLEGABLE CON CATEGORÍAS */}
+                    {/* CONFIGURACIÓN DESPLEGABLE CON CATEGORÍAS */}
                     <div className="space-y-1 pt-1 border-t border-[#D9822B]/20">
                       <button 
                         onClick={() => {
@@ -1875,7 +2169,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                       >
                         <div className="flex items-center gap-2.5">
                           <Sliders className="w-4 h-4 text-[#E5C384] group-hover:scale-110 transition-transform shrink-0" />
-                          <span>Reglas Operativas</span>
+                          <span>Configuración</span>
                         </div>
                         <ChevronRight className={`w-4 h-4 text-[#E5C384] transition-transform ${isSettingsMenuOpen && activeTab === 'settings' ? 'rotate-90' : ''}`} />
                       </button>
@@ -1883,6 +2177,15 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                       {/* Submenu Categorías Desplegables */}
                       {activeTab === 'settings' && isSettingsMenuOpen && (
                         <div className="pl-3 pr-1 py-1 space-y-1 border-l-2 border-[#D9822B]/40 ml-4 text-xs">
+                          <button
+                            onClick={() => setSettingsSubCategory('appearance')}
+                            className={`w-full text-left px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-2 cursor-pointer ${
+                              settingsSubCategory === 'appearance' ? 'bg-[#D9822B]/20 text-[#E5C384] font-bold border border-[#D9822B]/40' : 'text-[#A6988B] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
+                            }`}
+                          >
+                            <span>🎨 Apariencia</span>
+                          </button>
+
                           <button
                             onClick={() => setSettingsSubCategory('all')}
                             className={`w-full text-left px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-2 cursor-pointer ${
@@ -1983,11 +2286,12 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                     {activeTab === 'orders' && '📦 Gestión de Pedidos'}
                     {activeTab === 'catalog' && '🏷️ Gestión de Líneas & Productos'}
                     {activeTab === 'clients' && '📇 Directorio & Fichas de Clientes'}
-                    {activeTab === 'leads' && '✉️ CRM Leads & Cupones'}
+                    {activeTab === 'leads' && '🎟️ Cupones Canjeados'}
+                    {activeTab === 'visits' && '👁️ Visitas'}
                     {activeTab === 'mailing' && '📢 Campaña de Mailing (Próximamente)'}
                     {activeTab === 'calendar' && '📅 Calendario & Bloqueos'}
                     {activeTab === 'users' && '👥 Cuentas Administradoras'}
-                    {activeTab === 'settings' && '🎛️ Reglas Operativas'}
+                    {activeTab === 'settings' && '⚙️ Configuración del Sitio Web'}
                     {activeTab === 'audit' && '📜 Bitácora de Auditoría'}
                   </span>
                 </div>
@@ -2085,7 +2389,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                   {/* Orders Table */}
                   <div className="overflow-x-auto border border-[#D9822B]/20 rounded-xl bg-[#120B07]">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-[#1A120C] text-[#E5C384] font-serif uppercase tracking-wider border-b border-[#D9822B]/20">
+                      <thead className="bg-[#1A120C] text-[#E5C384] font-sans uppercase tracking-wider border-b border-[#D9822B]/20">
                         <tr>
                           <th className="p-3">Código</th>
                           <th className="p-3">Cliente / RUT</th>
@@ -2123,7 +2427,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
 
                                 {order.is_refunded ? (
                                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40">
-                                    💸 DEVOLUCIÓN REALIZADA
+                                    Reembolsado
                                   </span>
                                 ) : order.status === 'CANCELADO' ? (
                                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
@@ -2241,7 +2545,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         }`}
                       >
                         <Layers className="w-3.5 h-3.5" />
-                        Líneas / Categorías ({categories.length})
+                        Líneas ({categories.length})
                       </button>
                     </div>
 
@@ -2295,50 +2599,50 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
 
                       {/* Products Table */}
                       <div className="overflow-x-auto border border-[#D9822B]/20 rounded-xl bg-[#120B07]">
-                        <table className="w-full text-left text-xs">
-                          <thead className="bg-[#1A120C] text-[#E5C384] font-serif uppercase tracking-wider border-b border-[#D9822B]/20">
+                        <table className="w-full text-left text-xs min-w-[700px]">
+                          <thead className="bg-[#1A120C] text-[#E5C384] font-sans uppercase tracking-wider border-b border-[#D9822B]/20">
                             <tr>
                               <th className="p-3">Producto</th>
-                              <th className="p-3">Línea</th>
-                              <th className="p-3">Porciones / Piezas</th>
-                              <th className="p-3">Precio</th>
-                              <th className="p-3">Destacado</th>
-                              <th className="p-3 text-right">Acciones</th>
+                              <th className="p-3 whitespace-nowrap">Línea</th>
+                              <th className="p-3 whitespace-nowrap">Porciones / Piezas</th>
+                              <th className="p-3 whitespace-nowrap">Precio</th>
+                              <th className="p-3 whitespace-nowrap">Destacado</th>
+                              <th className="p-3 text-right whitespace-nowrap">Acciones</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-[#D9822B]/10 text-[#FAF6F0]">
                             {filteredProducts.map(prod => {
                               const catObj = categories.find(c => String(c.id) === String(prod.category));
                               return (
-                                <tr key={prod.id} className="hover:bg-[#1A120C]/60">
-                                  <td className="p-3 flex items-center gap-3">
+                                <tr key={prod.id} className="hover:bg-[#1A120C]/60 transition-colors">
+                                  <td className="p-3 flex items-center gap-3 min-w-[220px]">
                                     <img 
                                       src={prod.image || '/images/box_favoritos.jpg'} 
                                       alt={prod.name} 
                                       className="w-12 h-12 rounded-lg object-cover border border-[#D9822B]/30 shrink-0"
                                     />
                                     <div>
-                                      <span className="font-serif font-bold text-[#FAF6F0] block">{prod.name}</span>
+                                      <span className="font-sans font-bold text-[#FAF6F0] block">{prod.name}</span>
                                       <span className="text-[10px] text-[#A6988B] line-clamp-1">{prod.description}</span>
                                     </div>
                                   </td>
-                                  <td className="p-3">
-                                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#D9822B]/15 text-[#E5C384] border border-[#D9822B]/30">
+                                  <td className="p-3 whitespace-nowrap">
+                                    <span className="inline-block px-2.5 py-1 rounded-lg text-xs font-medium bg-[#D9822B]/15 text-[#E5C384] border border-[#D9822B]/30 whitespace-nowrap">
                                       {catObj ? catObj.name : 'General'}
                                     </span>
                                   </td>
-                                  <td className="p-3 font-mono font-bold text-[#E5C384]">{prod.units || 1} porciones</td>
-                                  <td className="p-3 font-mono font-bold text-[#FAF6F0]">${Number(prod.price).toLocaleString('es-CL')} CLP</td>
-                                  <td className="p-3">
+                                  <td className="p-3 font-mono font-bold text-[#E5C384] whitespace-nowrap">{prod.units || 1} porciones</td>
+                                  <td className="p-3 font-mono font-bold text-[#FAF6F0] whitespace-nowrap">${Number(prod.price).toLocaleString('es-CL')} CLP</td>
+                                  <td className="p-3 whitespace-nowrap">
                                     {prod.is_featured ? (
-                                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                                        ⭐ Destacado Home
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#D9822B]/20 text-[#E5C384] border border-[#D9822B]/40 whitespace-nowrap">
+                                        ⭐ Destacado
                                       </span>
                                     ) : (
-                                      <span className="text-[10px] text-[#A6988B]">No</span>
+                                      <span className="text-xs text-[#A6988B]">No</span>
                                     )}
                                   </td>
-                                  <td className="p-3 text-right">
+                                  <td className="p-3 text-right whitespace-nowrap">
                                     <div className="flex items-center justify-end gap-1.5">
                                       <button 
                                         onClick={() => handleOpenProductModal(prod)}
@@ -2370,7 +2674,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                     <div className="space-y-4">
                       <div className="overflow-x-auto border border-[#D9822B]/20 rounded-xl bg-[#120B07]">
                         <table className="w-full text-left text-xs">
-                          <thead className="bg-[#1A120C] text-[#E5C384] font-serif uppercase tracking-wider border-b border-[#D9822B]/20">
+                          <thead className="bg-[#1A120C] text-[#E5C384] font-sans uppercase tracking-wider border-b border-[#D9822B]/20">
                             <tr>
                               <th className="p-3">ID</th>
                               <th className="p-3">Nombre de la Línea</th>
@@ -2386,7 +2690,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                               return (
                                 <tr key={cat.id} className="hover:bg-[#1A120C]/60">
                                   <td className="p-3 font-mono font-bold text-[#E5C384]">#{cat.id}</td>
-                                  <td className="p-3 font-serif font-bold text-[#FAF6F0]">{cat.name}</td>
+                                  <td className="p-3 font-sans font-bold text-[#FAF6F0]">{cat.name}</td>
                                   <td className="p-3 font-mono text-xs text-[#A6988B]">{cat.slug}</td>
                                   <td className="p-3 text-[11px] text-[#A6988B]">{cat.description || 'Sin descripción'}</td>
                                   <td className="p-3 font-mono font-bold text-[#E5C384]">{prodCount} productos</td>
@@ -2481,7 +2785,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         type="text"
                         value={clientSearch}
                         onChange={e => setClientSearch(e.target.value)}
-                        placeholder="Buscar cliente por nombre, RUT, correo, teléfono, comuna o dirección..."
+                        placeholder="Buscar cliente por nombres, apellidos, RUT, correo, teléfono, comuna..."
                         className="w-full bg-[#1A120C] border border-[#D9822B]/30 rounded-lg pl-9 pr-8 py-2 text-xs text-[#FAF6F0] placeholder-[#A6988B]/60 focus:border-[#D9822B] outline-none transition-colors"
                       />
                       {clientSearch && (
@@ -2507,19 +2811,27 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         <option value="WITH_REFUNDS">Con Devoluciones / Reembolsos</option>
                         <option value="LEADS_ONLY">Clientes Prospecto (Boletín)</option>
                       </select>
+
+                      <button
+                        onClick={openNewClientModal}
+                        className="btn-primary text-xs py-2 px-3 flex items-center gap-1 shrink-0 font-bold"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>+ Registrar Cliente 3NF</span>
+                      </button>
                     </div>
                   </div>
 
                   {/* Clients Table */}
                   <div className="overflow-x-auto border border-[#D9822B]/20 rounded-xl bg-[#120B07]">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-[#1A120C] text-[#E5C384] font-serif uppercase tracking-wider border-b border-[#D9822B]/20">
+                      <thead className="bg-[#1A120C] text-[#E5C384] font-sans uppercase tracking-wider border-b border-[#D9822B]/20 text-[10px]">
                         <tr>
-                          <th className="p-3.5">Cliente / RUT</th>
-                          <th className="p-3.5">Datos de Contacto</th>
-                          <th className="p-3.5">Dirección Principal</th>
+                          <th className="p-3.5">Cliente (Nombres & Apellidos 3NF)</th>
+                          <th className="p-3.5">RUT Atomizado (1NF)</th>
+                          <th className="p-3.5">Ubicación (FK Comuna / Dirección)</th>
+                          <th className="p-3.5">Contacto</th>
                           <th className="p-3.5">Historial & Inversión Neta</th>
-                          <th className="p-3.5">Última Actividad</th>
                           <th className="p-3.5 text-right">Acciones</th>
                         </tr>
                       </thead>
@@ -2530,27 +2842,41 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                               <td className="p-3.5 font-bold">
                                 <div className="flex items-center gap-2.5">
                                   <span className="w-8 h-8 rounded-full bg-[#D9822B]/20 text-[#E5C384] flex items-center justify-center font-bold text-xs border border-[#D9822B]/30 shrink-0">
-                                    {(c.client_name || 'C').charAt(0).toUpperCase()}
+                                    {(c.full_name || c.client_name || 'C').charAt(0).toUpperCase()}
                                   </span>
                                   <div>
-                                    <p className="text-xs text-[#FAF6F0] font-semibold">{c.client_name}</p>
-                                    <p className="text-[10px] text-[#E5C384] font-mono">{c.rut || 'Sin RUT registrado'}</p>
+                                    <p className="text-xs text-[#FAF6F0] font-semibold">{c.full_name || c.client_name}</p>
+                                    <p className="text-[10px] text-[#A6988B] font-mono">
+                                      {c.first_name ? `${c.first_name} ${c.last_name_paternal} ${c.last_name_maternal || ''}` : 'Sincronizado 3NF'}
+                                    </p>
                                   </div>
                                 </div>
                               </td>
 
+                              <td className="p-3.5 font-mono">
+                                <p className="text-xs text-[#E5C384] font-bold">{c.formatted_rut || c.rut || 'Sin RUT registrado'}</p>
+                                {c.rut_body && (
+                                  <p className="text-[9px] text-[#A6988B]">Cuerpo: {c.rut_body} | DV: {c.rut_dv || '-'}</p>
+                                )}
+                              </td>
+
                               <td className="p-3.5">
-                                <div className="space-y-0.5">
-                                  <p className="text-xs font-mono text-[#FAF6F0]">{c.email}</p>
-                                  <p className="text-[11px] font-mono text-[#A6988B] flex items-center gap-1">
+                                <p className="text-xs text-[#FAF6F0] font-semibold">
+                                  {c.commune_name ? c.commune_name : 'Sin comuna FK'}
+                                </p>
+                                <p className="text-[10px] text-[#A6988B] max-w-xs truncate font-mono">
+                                  {c.address || 'Sin dirección'}
+                                </p>
+                              </td>
+
+                              <td className="p-3.5">
+                                <div className="space-y-0.5 font-mono">
+                                  <p className="text-xs text-[#FAF6F0]">{c.email}</p>
+                                  <p className="text-[10px] text-[#A6988B] flex items-center gap-1">
                                     <Phone className="w-3 h-3 text-[#E5C384]" />
                                     {c.phone || 'Sin teléfono'}
                                   </p>
                                 </div>
-                              </td>
-
-                              <td className="p-3.5 text-[#A6988B] max-w-xs truncate">
-                                {c.address || 'Sin dirección registrada'}
                               </td>
 
                               <td className="p-3.5">
@@ -2578,17 +2904,32 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                                 </div>
                               </td>
 
-                              <td className="p-3.5 text-xs text-[#A6988B] font-mono">
-                                {c.last_order_date || c.first_order_date || 'Sin fecha'}
-                              </td>
-
                               <td className="p-3.5 text-right">
-                                <button
-                                  onClick={() => setSelectedClientModal(c)}
-                                  className="btn-secondary text-[11px] py-1 px-3 hover:border-[#D9822B]"
-                                >
-                                  Ver Ficha Completa
-                                </button>
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    onClick={() => setSelectedClientModal(c)}
+                                    className="btn-secondary text-[10px] py-1 px-2 hover:border-[#D9822B]"
+                                    title="Ver Ficha y Historial de Pedidos"
+                                  >
+                                    Ficha
+                                  </button>
+                                  <button
+                                    onClick={() => openEditClientModal(c)}
+                                    className="btn-secondary text-[10px] py-1 px-2 text-[#E5C384] hover:border-[#D9822B]"
+                                    title="Editar Campos Atomizados 3NF"
+                                  >
+                                    Editar
+                                  </button>
+                                  {typeof c.id === 'number' && (
+                                    <button
+                                      onClick={() => handleDeleteClient(c.id)}
+                                      className="p-1 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
+                                      title="Eliminar Cliente"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
                               </td>
                             </tr>
                           ))
@@ -2616,10 +2957,10 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
               {/* LEADS TAB */}
               {activeTab === 'leads' && (
                 <div className="space-y-4">
-                  <h4 className="font-serif text-lg font-bold text-[#E5C384]">CRM de Correos Capturados (5% Descuento)</h4>
+                  <h4 className="font-sans text-lg font-bold text-[#E5C384]">Cupones Canjeados y Correos Capturados (5% Descuento)</h4>
                   <div className="overflow-x-auto border border-[#D9822B]/20 rounded-xl bg-[#120B07]">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-[#1A120C] text-[#E5C384] font-serif uppercase tracking-wider border-b border-[#D9822B]/20">
+                      <thead className="bg-[#1A120C] text-[#E5C384] font-sans uppercase tracking-wider border-b border-[#D9822B]/20">
                         <tr>
                           <th className="p-3">Correo Electrónico</th>
                           <th className="p-3">Código Cupón</th>
@@ -2659,7 +3000,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                       🚀 PRÓXIMAMENTE / EN CONSTRUCCIÓN
                     </div>
 
-                    <h2 className="text-2xl sm:text-3xl font-serif text-[#FAF6F0] font-bold tracking-wide">
+                    <h2 className="text-2xl sm:text-3xl font-sans text-[#FAF6F0] font-bold tracking-wide">
                       Campaña de Mailing Masivo & Fidelización
                     </h2>
 
@@ -2702,16 +3043,25 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
 
               {/* SETTINGS TAB */}
               {activeTab === 'settings' && (
-                <div className="space-y-6 max-w-2xl">
+                <div className="space-y-6 max-w-4xl">
                   <div>
-                    <h4 className="font-serif text-lg font-bold text-[#E5C384]">Parámetros Operativos del Sistema</h4>
+                    <h4 className="font-sans text-lg font-bold text-[#E5C384]">Configuración General del Sitio Web & Parámetros Operativos</h4>
                     <p className="text-xs text-[#A6988B]">
-                      Modifica las variables del negocio. Selecciona una categoría para enfocarte en una regla específica o navega libremente.
+                      Personaliza la apariencia (colores, logo, textos hero) y modifica las reglas operativas de la banquetería.
                     </p>
                   </div>
 
                   {/* Subcategory Pill Filter Bar */}
                   <div className="flex items-center gap-1.5 flex-wrap bg-[#120B07] p-1.5 rounded-xl border border-[#D9822B]/20">
+                    <button
+                      type="button"
+                      onClick={() => setSettingsSubCategory('appearance')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        settingsSubCategory === 'appearance' ? 'bg-[#D9822B] text-white font-bold shadow' : 'text-[#A6988B] hover:text-[#FAF6F0]'
+                      }`}
+                    >
+                      🎨 Apariencia
+                    </button>
                     <button
                       type="button"
                       onClick={() => setSettingsSubCategory('all')}
@@ -2776,209 +3126,1339 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                   )}
 
                   <div className="glass-card p-6 space-y-6">
+
+                    {/* CATEGORY: APPEARANCE & BRAND */}
+                    {(settingsSubCategory === 'all' || settingsSubCategory === 'appearance') && (
+                      <div className="space-y-6 pb-6 border-b border-[#D9822B]/20">
+                        <div className="flex items-center justify-between border-b border-[#D9822B]/20 pb-3">
+                          <div>
+                            <h5 className="font-sans font-bold text-base text-[#E5C384] flex items-center gap-2">
+                              Apariencia del Sitio Web & Marca
+                            </h5>
+                            <p className="text-xs text-[#A6988B] mt-0.5">
+                              Personaliza el esquema de colores, el logo oficial de la marca y los textos publicitarios de la portada (Hero).
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* ACCORDION 1: PALETA DE COLORES */}
+                        <div className="bg-[#120B07] rounded-2xl border border-[#D9822B]/30 overflow-hidden transition-all shadow-md">
+                          <button
+                            type="button"
+                            onClick={() => toggleAccordion('palette')}
+                            className="w-full flex items-center justify-between p-4 bg-[#120B07] hover:bg-[#1A120C] transition-colors cursor-pointer text-left"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="p-2.5 rounded-xl bg-[#D9822B]/15 border border-[#D9822B]/30 text-[#E5C384]">
+                                <Palette className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Paleta de Colores Generales del Sitio</h6>
+                                <p className="text-[11px] text-[#A6988B]">Personaliza los colores principales, secundarios, fondos y tarjetas.</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold text-[#E5C384]">
+                                {openAccordions.palette ? 'Contraer' : 'Desplegar'}
+                              </span>
+                              {openAccordions.palette ? <ChevronUp className="w-5 h-5 text-[#E5C384]" /> : <ChevronDown className="w-5 h-5 text-[#E5C384]" />}
+                            </div>
+                          </button>
+
+                          {openAccordions.palette && (
+                            <div className="p-5 border-t border-[#D9822B]/20 space-y-4">
+                              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                                <span className="text-xs text-[#A6988B]">Ajusta cada color manualmente o aplica una combinación lista:</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setConfig(prev => ({
+                                    ...prev,
+                                    theme_color_primary: '#D9822B',
+                                    theme_color_secondary: '#E5C384',
+                                    theme_color_bg: '#120B07',
+                                    theme_color_card: '#1A120C',
+                                    theme_color_text: '#FAF6F0'
+                                  }))}
+                                  className="text-xs text-[#E5C384] hover:underline transition-all flex items-center gap-1 cursor-pointer"
+                                >
+                                  <RefreshCw className="w-3 h-3" /> Restablecer Colores por Defecto
+                                </button>
+                              </div>
+
+                              {/* Preset Color Themes */}
+                              <div className="space-y-2">
+                                <label className="text-xs font-semibold text-[#A6988B] block">Temas de Colores Predefinidos (Selecciona para aplicar):</label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                  {[
+                                    { name: '🟡 Dorado & Ámbar (Original)', primary: '#D9822B', secondary: '#E5C384', bg: '#120B07', card: '#1A120C', text: '#FAF6F0' },
+                                    { name: '🍷 Vino & Borgoña Elegante', primary: '#C0392B', secondary: '#E6B0AA', bg: '#150A0A', card: '#221010', text: '#FDFEFE' },
+                                    { name: '🌿 Verde Esmeralda Gourmet', primary: '#16A085', secondary: '#A3E4D7', bg: '#0A1512', card: '#10221E', text: '#F4F6F7' },
+                                    { name: '🔷 Azul Noche Real', primary: '#2980B9', secondary: '#AED6F1', bg: '#0B131C', card: '#121E2C', text: '#F4F6F7' },
+                                    { name: '🖤 Negro & Platino', primary: '#D4AF37', secondary: '#F3E5AB', bg: '#080808', card: '#141414', text: '#FFFFFF' }
+                                  ].map((preset, pIdx) => (
+                                    <button
+                                      key={pIdx}
+                                      type="button"
+                                      onClick={() => setConfig(prev => ({
+                                        ...prev,
+                                        theme_color_primary: preset.primary,
+                                        theme_color_secondary: preset.secondary,
+                                        theme_color_bg: preset.bg,
+                                        theme_color_card: preset.card,
+                                        theme_color_text: preset.text,
+                                      }))}
+                                      className="p-2.5 rounded-xl border border-[#D9822B]/30 hover:border-[#D9822B] bg-[#1A120C] flex items-center justify-between text-xs transition-all text-left cursor-pointer group"
+                                    >
+                                      <span className="font-semibold text-[#FAF6F0] group-hover:text-[#E5C384] transition-colors">{preset.name}</span>
+                                      <div className="flex items-center gap-1 shrink-0 ml-2">
+                                        <span className="w-3.5 h-3.5 rounded-full border border-white/20 shadow" style={{ backgroundColor: preset.primary }} />
+                                        <span className="w-3.5 h-3.5 rounded-full border border-white/20 shadow" style={{ backgroundColor: preset.secondary }} />
+                                        <span className="w-3.5 h-3.5 rounded-full border border-white/20 shadow" style={{ backgroundColor: preset.bg }} />
+                                      </div>
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Custom Color Pickers Grid */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
+                                
+                                {/* Primary Color */}
+                                <div className="space-y-1.5 bg-[#1A120C] p-3 rounded-xl border border-[#D9822B]/20">
+                                  <label className="text-xs font-semibold text-[#FAF6F0] block">Color Primario / Botones</label>
+                                  <div className="flex items-center gap-2">
+                                    <input 
+                                      type="color" 
+                                      value={config.theme_color_primary || '#D9822B'}
+                                      onChange={(e) => setConfig({ ...config, theme_color_primary: e.target.value })}
+                                      className="w-9 h-9 rounded-lg border-0 cursor-pointer bg-transparent shrink-0"
+                                    />
+                                    <input 
+                                      type="text" 
+                                      value={config.theme_color_primary || '#D9822B'}
+                                      onChange={(e) => setConfig({ ...config, theme_color_primary: e.target.value })}
+                                      className="w-full p-2 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs font-mono text-[#E5C384]"
+                                    />
+                                  </div>
+                                  <p className="text-[11px] text-[#A6988B]">Usado en botones primarios, badges y acentos.</p>
+                                </div>
+
+                                {/* Secondary Color */}
+                                <div className="space-y-1.5 bg-[#1A120C] p-3 rounded-xl border border-[#D9822B]/20">
+                                  <label className="text-xs font-semibold text-[#FAF6F0] block">Color Secundario / Dorado</label>
+                                  <div className="flex items-center gap-2">
+                                    <input 
+                                      type="color" 
+                                      value={config.theme_color_secondary || '#E5C384'}
+                                      onChange={(e) => setConfig({ ...config, theme_color_secondary: e.target.value })}
+                                      className="w-9 h-9 rounded-lg border-0 cursor-pointer bg-transparent shrink-0"
+                                    />
+                                    <input 
+                                      type="text" 
+                                      value={config.theme_color_secondary || '#E5C384'}
+                                      onChange={(e) => setConfig({ ...config, theme_color_secondary: e.target.value })}
+                                      className="w-full p-2 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs font-mono text-[#E5C384]"
+                                    />
+                                  </div>
+                                  <p className="text-[11px] text-[#A6988B]">Usado en títulos principales, subtítulos y precios.</p>
+                                </div>
+
+                                {/* Main BG Color */}
+                                <div className="space-y-1.5 bg-[#1A120C] p-3 rounded-xl border border-[#D9822B]/20">
+                                  <label className="text-xs font-semibold text-[#FAF6F0] block">Color Fondo Principal</label>
+                                  <div className="flex items-center gap-2">
+                                    <input 
+                                      type="color" 
+                                      value={config.theme_color_bg || '#120B07'}
+                                      onChange={(e) => setConfig({ ...config, theme_color_bg: e.target.value })}
+                                      className="w-9 h-9 rounded-lg border-0 cursor-pointer bg-transparent shrink-0"
+                                    />
+                                    <input 
+                                      type="text" 
+                                      value={config.theme_color_bg || '#120B07'}
+                                      onChange={(e) => setConfig({ ...config, theme_color_bg: e.target.value })}
+                                      className="w-full p-2 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs font-mono text-[#E5C384]"
+                                    />
+                                  </div>
+                                  <p className="text-[11px] text-[#A6988B]">Fondo general del sitio y cuerpo de la página.</p>
+                                </div>
+
+                                {/* Card BG Color */}
+                                <div className="space-y-1.5 bg-[#1A120C] p-3 rounded-xl border border-[#D9822B]/20">
+                                  <label className="text-xs font-semibold text-[#FAF6F0] block">Color Fondo de Tarjetas</label>
+                                  <div className="flex items-center gap-2">
+                                    <input 
+                                      type="color" 
+                                      value={config.theme_color_card || '#1A120C'}
+                                      onChange={(e) => setConfig({ ...config, theme_color_card: e.target.value })}
+                                      className="w-9 h-9 rounded-lg border-0 cursor-pointer bg-transparent shrink-0"
+                                    />
+                                    <input 
+                                      type="text" 
+                                      value={config.theme_color_card || '#1A120C'}
+                                      onChange={(e) => setConfig({ ...config, theme_color_card: e.target.value })}
+                                      className="w-full p-2 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs font-mono text-[#E5C384]"
+                                    />
+                                  </div>
+                                  <p className="text-[11px] text-[#A6988B]">Fondo de tarjetas de menú, modales y módulos.</p>
+                                </div>
+
+                                {/* Main Text Color */}
+                                <div className="space-y-1.5 bg-[#1A120C] p-3 rounded-xl border border-[#D9822B]/20">
+                                  <label className="text-xs font-semibold text-[#FAF6F0] block">Color Texto Principal</label>
+                                  <div className="flex items-center gap-2">
+                                    <input 
+                                      type="color" 
+                                      value={config.theme_color_text || '#FAF6F0'}
+                                      onChange={(e) => setConfig({ ...config, theme_color_text: e.target.value })}
+                                      className="w-9 h-9 rounded-lg border-0 cursor-pointer bg-transparent shrink-0"
+                                    />
+                                    <input 
+                                      type="text" 
+                                      value={config.theme_color_text || '#FAF6F0'}
+                                      onChange={(e) => setConfig({ ...config, theme_color_text: e.target.value })}
+                                      className="w-full p-2 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs font-mono text-[#E5C384]"
+                                    />
+                                  </div>
+                                  <p className="text-[11px] text-[#A6988B]">Color del texto de párrafos y contenido.</p>
+                                </div>
+
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* ACCORDION 2: LOGO OFICIAL Y FAVICON DEL SITIO */}
+                        <div className="bg-[#120B07] rounded-2xl border border-[#D9822B]/30 overflow-hidden transition-all shadow-md">
+                          <button
+                            type="button"
+                            onClick={() => toggleAccordion('logo')}
+                            className="w-full flex items-center justify-between p-4 bg-[#120B07] hover:bg-[#1A120C] transition-colors cursor-pointer text-left"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="p-2.5 rounded-xl bg-[#D9822B]/15 border border-[#D9822B]/30 text-[#E5C384]">
+                                <ImageIcon className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Logo Oficial & Icono de Sitio Web</h6>
+                                <p className="text-[11px] text-[#A6988B]">Sube el logo oficial de la marca y el icono de la pestaña del navegador.</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold text-[#E5C384]">
+                                {openAccordions.logo ? 'Contraer' : 'Desplegar'}
+                              </span>
+                              {openAccordions.logo ? <ChevronUp className="w-5 h-5 text-[#E5C384]" /> : <ChevronDown className="w-5 h-5 text-[#E5C384]" />}
+                            </div>
+                          </button>
+
+                          {openAccordions.logo && (
+                            <div className="p-5 border-t border-[#D9822B]/20 space-y-6">
+                              {/* A. LOGO OFICIAL */}
+                              <div className="space-y-4">
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                                  <h6 className="font-sans font-bold text-sm text-[#FAF6F0] flex items-center gap-2">
+                                    <span>Logo Oficial del Sitio Web</span>
+                                  </h6>
+                                  <button
+                                    type="button"
+                                    onClick={() => setConfig(prev => ({ ...prev, site_logo: '/images/logo_lina.png' }))}
+                                    className="text-xs text-[#E5C384] hover:underline transition-all flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <RefreshCw className="w-3 h-3" /> Restablecer Logo Predeterminado
+                                  </button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                                  {/* Preview Box */}
+                                  <div className="bg-[#1A120C] p-4 rounded-xl border border-[#D9822B]/30 flex flex-col items-center justify-center text-center space-y-2 min-h-[130px]">
+                                    <span className="text-[11px] font-semibold text-[#A6988B] uppercase tracking-wider">Vista Previa del Logo</span>
+                                    <img 
+                                      src={config.site_logo || '/images/logo_lina.png'} 
+                                      alt="Logo Actual" 
+                                      className="h-20 max-w-full object-contain filter drop-shadow-md"
+                                      onError={(e) => { e.target.onerror = null; e.target.src = '/images/logo_lina.png'; }}
+                                    />
+                                  </div>
+
+                                  {/* Upload Controls */}
+                                  <div className="md:col-span-2 space-y-3">
+                                    {/* Drag & Drop File Selector */}
+                                    <div
+                                      onDragOver={(e) => { e.preventDefault(); setIsLogoDragging(true); }}
+                                      onDragLeave={(e) => { e.preventDefault(); setIsLogoDragging(false); }}
+                                      onDrop={(e) => {
+                                        e.preventDefault();
+                                        setIsLogoDragging(false);
+                                        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                          handleLogoFileSelect(e.dataTransfer.files[0]);
+                                        }
+                                      }}
+                                      onClick={() => logoFileInputRef.current && logoFileInputRef.current.click()}
+                                      className={`border-2 dashed rounded-xl p-4 text-center cursor-pointer transition-all ${
+                                        isLogoDragging ? 'border-[#D9822B] bg-[#D9822B]/20 scale-[1.01]' : 'border-[#D9822B]/40 hover:border-[#D9822B] bg-[#1A120C]/80'
+                                      }`}
+                                    >
+                                      <input 
+                                        type="file" 
+                                        ref={logoFileInputRef}
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => e.target.files && handleLogoFileSelect(e.target.files[0])}
+                                      />
+                                      <Upload className="w-6 h-6 text-[#E5C384] mx-auto mb-1" />
+                                      <p className="text-xs font-semibold text-[#FAF6F0]">
+                                        Haz clic para subir un nuevo Logo o arrastra un archivo aquí
+                                      </p>
+                                      <p className="text-[11px] text-[#A6988B] mt-0.5">Soporta PNG, JPG, SVG o WEBP (Recomendado fondo transparente)</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <hr className="border-[#D9822B]/20 my-2" />
+
+                              {/* B. FAVICON (ÍCONO DE PESTAÑA DEL NAVEGADOR) */}
+                              <div className="space-y-4">
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                                  <h6 className="font-sans font-bold text-sm text-[#FAF6F0] flex items-center gap-2">
+                                    <span>Icono de Sitio Web</span>
+                                  </h6>
+                                  <button
+                                    type="button"
+                                    onClick={() => setConfig(prev => ({ ...prev, site_favicon: '/images/logo_lina.png' }))}
+                                    className="text-xs text-[#E5C384] hover:underline transition-all flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <RefreshCw className="w-3 h-3" /> Restablecer Favicon Predeterminado
+                                  </button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                                  {/* Simulated Browser Tab Preview Box */}
+                                  <div className="bg-[#1A120C] p-4 rounded-xl border border-[#D9822B]/30 flex flex-col items-center justify-center text-center space-y-2 min-h-[130px]">
+                                    <span className="text-[11px] font-semibold text-[#A6988B] uppercase tracking-wider">Simulación Pestaña Navegador</span>
+                                    <div className="bg-[#2B231D] border border-[#D9822B]/30 px-3 py-1.5 rounded-t-lg inline-flex items-center gap-2 max-w-[200px] shadow-md">
+                                      <img 
+                                        src={config.site_favicon || '/images/logo_lina.png'} 
+                                        alt="Favicon Preview" 
+                                        className="w-4 h-4 object-contain shrink-0"
+                                        onError={(e) => { e.target.onerror = null; e.target.src = '/images/logo_lina.png'; }}
+                                      />
+                                      <span className="text-[10px] text-[#FAF6F0] font-medium truncate">Banquetería Lina</span>
+                                      <span className="text-[10px] text-[#A6988B]">×</span>
+                                    </div>
+                                    <p className="text-[10px] text-[#A6988B]">Este icono aparece arriba en la pestaña del navegador.</p>
+                                  </div>
+
+                                  {/* Upload Controls */}
+                                  <div className="md:col-span-2">
+                                    {/* Drag & Drop File Selector for Favicon */}
+                                    <div
+                                      onDragOver={(e) => { e.preventDefault(); setIsFaviconDragging(true); }}
+                                      onDragLeave={(e) => { e.preventDefault(); setIsFaviconDragging(false); }}
+                                      onDrop={(e) => {
+                                        e.preventDefault();
+                                        setIsFaviconDragging(false);
+                                        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                          handleFaviconFileSelect(e.dataTransfer.files[0]);
+                                        }
+                                      }}
+                                      onClick={() => faviconFileInputRef.current && faviconFileInputRef.current.click()}
+                                      className={`border-2 dashed rounded-xl p-4 text-center cursor-pointer transition-all ${
+                                        isFaviconDragging ? 'border-[#D9822B] bg-[#D9822B]/20 scale-[1.01]' : 'border-[#D9822B]/40 hover:border-[#D9822B] bg-[#1A120C]/80'
+                                      }`}
+                                    >
+                                      <input 
+                                        type="file" 
+                                        ref={faviconFileInputRef}
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => e.target.files && handleFaviconFileSelect(e.target.files[0])}
+                                      />
+                                      <Upload className="w-6 h-6 text-[#E5C384] mx-auto mb-1" />
+                                      <p className="text-xs font-semibold text-[#FAF6F0]">
+                                        Haz clic para subir un nuevo Favicon o arrastra una imagen aquí
+                                      </p>
+                                      <p className="text-[11px] text-[#A6988B] mt-0.5">Soporta PNG, ICO, SVG o WEBP (Recomendado formato cuadrado)</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* ACCORDION 3: TEXTOS Y SECCIONES DEL HERO */}
+                        <div className="bg-[#120B07] rounded-2xl border border-[#D9822B]/30 overflow-hidden transition-all shadow-md">
+                          <button
+                            type="button"
+                            onClick={() => toggleAccordion('hero')}
+                            className="w-full flex items-center justify-between p-4 bg-[#120B07] hover:bg-[#1A120C] transition-colors cursor-pointer text-left"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="p-2.5 rounded-xl bg-[#D9822B]/15 border border-[#D9822B]/30 text-[#E5C384]">
+                                <Type className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Textos y Secciones de la Portada (Hero)</h6>
+                                <p className="text-[11px] text-[#A6988B]">Edita el título principal, subtítulo, insignia superior y las 3 tarjetas informativas.</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold text-[#E5C384]">
+                                {openAccordions.hero ? 'Contraer' : 'Desplegar'}
+                              </span>
+                              {openAccordions.hero ? <ChevronUp className="w-5 h-5 text-[#E5C384]" /> : <ChevronDown className="w-5 h-5 text-[#E5C384]" />}
+                            </div>
+                          </button>
+
+                          {openAccordions.hero && (
+                            <div className="p-5 border-t border-[#D9822B]/20 space-y-5">
+                              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                                <span className="text-xs text-[#A6988B]">Modifica los textos principales o la visibilidad de los elementos del Hero:</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setConfig(prev => ({
+                                    ...prev,
+                                    hero_title: 'El arte de comer rico',
+                                    hero_subtitle: 'Presentaciones gourmet artesanales, montajes decorativos y garzones para tus momentos inolvidables.',
+                                    hero_badge_text: 'Banquetería Familiar en Santiago de Chile',
+                                    show_hero_badge: 'true',
+                                    show_hero_cards: 'true',
+                                    hero_card1_title: '3 Días de Anticipación',
+                                    hero_card1_desc: 'Elaboración artesanal fresca con reserva previa.',
+                                    hero_card2_title: 'Retiro o Montaje Sábados',
+                                    hero_card2_desc: 'Retiro presencial Lun-Dom; montajes los Sábados.',
+                                    hero_card3_title: 'Opción Garzones',
+                                    hero_card3_desc: 'Cálculo automático de personal (1 cada 25 personas).'
+                                  }))}
+                                  className="text-xs text-[#E5C384] hover:underline transition-all flex items-center gap-1 cursor-pointer"
+                                >
+                                  <RefreshCw className="w-3 h-3" /> Restablecer Secciones por Defecto
+                                </button>
+                              </div>
+
+                              {/* Hero Title & Subtitle inputs */}
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="text-xs font-bold text-[#FAF6F0] block mb-1">
+                                    Título Principal del Hero (Encabezado)
+                                  </label>
+                                  <input 
+                                    type="text"
+                                    value={config.hero_title || ''}
+                                    onChange={(e) => setConfig({ ...config, hero_title: e.target.value })}
+                                    placeholder="El arte de comer rico"
+                                    className="w-full p-2.5 bg-[#1A120C] border border-[#D9822B]/30 rounded-xl text-xs font-sans font-bold text-[#FAF6F0]"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="text-xs font-bold text-[#FAF6F0] block mb-1">
+                                    Subtítulo / Descripción del Hero
+                                  </label>
+                                  <textarea 
+                                    rows={2}
+                                    value={config.hero_subtitle || ''}
+                                    onChange={(e) => setConfig({ ...config, hero_subtitle: e.target.value })}
+                                    placeholder="Presentaciones gourmet artesanales..."
+                                    className="w-full p-2.5 bg-[#1A120C] border border-[#D9822B]/30 rounded-xl text-xs text-[#FAF6F0]"
+                                  />
+                                </div>
+                              </div>
+
+                              <hr className="border-[#D9822B]/20 my-2" />
+
+                              {/* A. Insignia Superior (Badge Header) */}
+                              <div className="bg-[#1A120C] p-4 rounded-xl border border-[#D9822B]/20 space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <h6 className="text-xs font-bold text-[#E5C384]">Insignia Superior (Badge Encabezado)</h6>
+                                  <label className="flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                      type="checkbox"
+                                      checked={config.show_hero_badge === 'true' || config.show_hero_badge === true}
+                                      onChange={(e) => setConfig({ ...config, show_hero_badge: e.target.checked ? 'true' : 'false' })}
+                                      className="w-4 h-4 accent-[#D9822B] rounded cursor-pointer"
+                                    />
+                                    <span className="text-xs font-semibold text-[#FAF6F0]">
+                                      {(config.show_hero_badge === 'true' || config.show_hero_badge === true) ? '👁️ Visible' : '🙈 Oculta'}
+                                    </span>
+                                  </label>
+                                </div>
+
+                                {(config.show_hero_badge === 'true' || config.show_hero_badge === true) && (
+                                  <div>
+                                    <label className="text-[11px] text-[#A6988B] block mb-1">Texto de la Insignia:</label>
+                                    <input 
+                                      type="text"
+                                      value={config.hero_badge_text || ''}
+                                      onChange={(e) => setConfig({ ...config, hero_badge_text: e.target.value })}
+                                      placeholder="Ej: Banquetería Familiar en Santiago de Chile"
+                                      className="w-full p-2 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs font-semibold text-[#E5C384]"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* B. Las 3 Tarjetas Informativas Operativas */}
+                              <div className="bg-[#1A120C] p-4 rounded-xl border border-[#D9822B]/20 space-y-4">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <h6 className="text-xs font-bold text-[#E5C384]">3 Tarjetas Informativas Operativas del Hero</h6>
+                                    <p className="text-[11px] text-[#A6988B]">Resumen de anticipación, retiro/montaje y garzones.</p>
+                                  </div>
+                                  <label className="flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                      type="checkbox"
+                                      checked={config.show_hero_cards === 'true' || config.show_hero_cards === true}
+                                      onChange={(e) => setConfig({ ...config, show_hero_cards: e.target.checked ? 'true' : 'false' })}
+                                      className="w-4 h-4 accent-[#D9822B] rounded cursor-pointer"
+                                    />
+                                    <span className="text-xs font-semibold text-[#FAF6F0]">
+                                      {(config.show_hero_cards === 'true' || config.show_hero_cards === true) ? '👁️ Visibles' : '🙈 Ocultas'}
+                                    </span>
+                                  </label>
+                                </div>
+
+                                {(config.show_hero_cards === 'true' || config.show_hero_cards === true) && (
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    {/* Card 1 */}
+                                    <div className="bg-[#120B07] p-3 rounded-lg border border-[#D9822B]/30 space-y-2">
+                                      <span className="text-[11px] font-bold text-[#E5C384] uppercase block">Tarjeta 1 (Anticipación)</span>
+                                      <input 
+                                        type="text"
+                                        value={config.hero_card1_title || ''}
+                                        onChange={(e) => setConfig({ ...config, hero_card1_title: e.target.value })}
+                                        placeholder="Título"
+                                        className="w-full p-1.5 bg-[#1A120C] border border-[#D9822B]/20 rounded text-xs font-semibold text-[#FAF6F0]"
+                                      />
+                                      <textarea 
+                                        rows={2}
+                                        value={config.hero_card1_desc || ''}
+                                        onChange={(e) => setConfig({ ...config, hero_card1_desc: e.target.value })}
+                                        placeholder="Descripción"
+                                        className="w-full p-1.5 bg-[#1A120C] border border-[#D9822B]/20 rounded text-[11px] text-[#A6988B]"
+                                      />
+                                    </div>
+
+                                    {/* Card 2 */}
+                                    <div className="bg-[#120B07] p-3 rounded-lg border border-[#D9822B]/30 space-y-2">
+                                      <span className="text-[11px] font-bold text-[#E5C384] uppercase block">Tarjeta 2 (Horarios/Montaje)</span>
+                                      <input 
+                                        type="text"
+                                        value={config.hero_card2_title || ''}
+                                        onChange={(e) => setConfig({ ...config, hero_card2_title: e.target.value })}
+                                        placeholder="Título"
+                                        className="w-full p-1.5 bg-[#1A120C] border border-[#D9822B]/20 rounded text-xs font-semibold text-[#FAF6F0]"
+                                      />
+                                      <textarea 
+                                        rows={2}
+                                        value={config.hero_card2_desc || ''}
+                                        onChange={(e) => setConfig({ ...config, hero_card2_desc: e.target.value })}
+                                        placeholder="Descripción"
+                                        className="w-full p-1.5 bg-[#1A120C] border border-[#D9822B]/20 rounded text-[11px] text-[#A6988B]"
+                                      />
+                                    </div>
+
+                                    {/* Card 3 */}
+                                    <div className="bg-[#120B07] p-3 rounded-lg border border-[#D9822B]/30 space-y-2">
+                                      <span className="text-[11px] font-bold text-[#E5C384] uppercase block">Tarjeta 3 (Garzones)</span>
+                                      <input 
+                                        type="text"
+                                        value={config.hero_card3_title || ''}
+                                        onChange={(e) => setConfig({ ...config, hero_card3_title: e.target.value })}
+                                        placeholder="Título"
+                                        className="w-full p-1.5 bg-[#1A120C] border border-[#D9822B]/20 rounded text-xs font-semibold text-[#FAF6F0]"
+                                      />
+                                      <textarea 
+                                        rows={2}
+                                        value={config.hero_card3_desc || ''}
+                                        onChange={(e) => setConfig({ ...config, hero_card3_desc: e.target.value })}
+                                        placeholder="Descripción"
+                                        className="w-full p-1.5 bg-[#1A120C] border border-[#D9822B]/20 rounded text-[11px] text-[#A6988B]"
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Live Complete Mini Preview of Hero Section */}
+                            <div className="pt-2">
+                              <label className="text-xs font-semibold text-[#A6988B] block mb-1.5">
+                                🔍 Vista Previa en Vivo Completa de la Sección Hero:
+                              </label>
+                              <div className="bg-[#160F0C] border border-[#D9822B]/40 rounded-2xl p-6 text-center space-y-4 shadow-2xl relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+                                <div className="relative z-10 space-y-3">
+                                  
+                                  {(config.show_hero_badge === 'true' || config.show_hero_badge === true) && (
+                                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#120B07]/80 border border-[#D9822B]/50 text-[11px] font-semibold text-[#E5C384]">
+                                      🏆 {config.hero_badge_text || 'Banquetería Familiar en Santiago de Chile'}
+                                    </div>
+                                  )}
+
+                                  <h2 className="font-sans text-2xl md:text-3xl font-bold leading-tight">
+                                    <span className="bg-gradient-to-r from-[#FFF5E6] via-[#E5C384] to-[#D9822B] bg-clip-text text-transparent">
+                                      {config.hero_title || 'El arte de comer rico'}
+                                    </span>
+                                  </h2>
+
+                                  <p className="text-xs text-[#FAF6F0] max-w-lg mx-auto leading-relaxed bg-[#120B07]/70 p-2.5 rounded-xl border border-[#D9822B]/30">
+                                    {config.hero_subtitle || 'Presentaciones gourmet artesanales, montajes decorativos y garzones para tus momentos inolvidables.'}
+                                  </p>
+
+                                  <div className="pt-1">
+                                    <span className="btn-primary text-xs py-2 px-5 font-bold shadow-lg inline-flex items-center gap-1.5">
+                                      <UtensilsCrossed className="w-3.5 h-3.5" /> Solicitar Servicio ➔
+                                    </span>
+                                  </div>
+
+                                  {(config.show_hero_cards === 'true' || config.show_hero_cards === true) && (
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 max-w-md mx-auto text-left">
+                                      <div className="bg-[#120B07]/90 p-2 rounded-lg border border-[#D9822B]/30">
+                                        <strong className="text-[11px] text-[#FAF6F0] block">{config.hero_card1_title || '3 Días de Anticipación'}</strong>
+                                        <span className="text-[10px] text-[#A6988B] block truncate">{config.hero_card1_desc || 'Elaboración artesanal fresca.'}</span>
+                                      </div>
+                                      <div className="bg-[#120B07]/90 p-2 rounded-lg border border-[#D9822B]/30">
+                                        <strong className="text-[11px] text-[#FAF6F0] block">{config.hero_card2_title || 'Retiro o Montaje Sábados'}</strong>
+                                        <span className="text-[10px] text-[#A6988B] block truncate">{config.hero_card2_desc || 'Montajes los Sábados.'}</span>
+                                      </div>
+                                      <div className="bg-[#120B07]/90 p-2 rounded-lg border border-[#D9822B]/30">
+                                        <strong className="text-[11px] text-[#FAF6F0] block">{config.hero_card3_title || 'Opción Garzones'}</strong>
+                                        <span className="text-[10px] text-[#A6988B] block truncate">{config.hero_card3_desc || 'Cálculo de personal.'}</span>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                        {/* ACCORDION 4: SECCIÓN ¿QUIÉNES SOMOS? (HISTORIA Y FAMILIA) */}
+                        <div className="bg-[#120B07] rounded-2xl border border-[#D9822B]/30 overflow-hidden transition-all shadow-md">
+                          <button
+                            type="button"
+                            onClick={() => toggleAccordion('about')}
+                            className="w-full flex items-center justify-between p-4 bg-[#120B07] hover:bg-[#1A120C] transition-colors cursor-pointer text-left"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="p-2.5 rounded-xl bg-[#D9822B]/15 border border-[#D9822B]/30 text-[#E5C384]">
+                                <FileText className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Sección "¿Quiénes Somos?" (Historia y Familia)</h6>
+                                <p className="text-[11px] text-[#A6988B]">Modifica la foto, la historia familiar, párrafos y visibilidad de la sección.</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold text-[#E5C384]">
+                                {openAccordions.about ? 'Contraer' : 'Desplegar'}
+                              </span>
+                              {openAccordions.about ? <ChevronUp className="w-5 h-5 text-[#E5C384]" /> : <ChevronDown className="w-5 h-5 text-[#E5C384]" />}
+                            </div>
+                          </button>
+
+                          {openAccordions.about && (
+                            <div className="p-5 border-t border-[#D9822B]/20 space-y-5">
+                              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                                <span className="text-xs text-[#A6988B]">Configura los contenidos de la historia familiar o su visibilidad:</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setConfig(prev => ({
+                                    ...prev,
+                                    show_about_section: 'true',
+                                    about_badge_text: 'Nuestra Historia & Familia',
+                                    about_title: '¿Quiénes Somos?',
+                                    about_quote: '"Somos la familia Quilodrán y nos encanta dar una experiencia gastronómica acogedora. Orgullosamente de San Bernardo."',
+                                    about_paragraph1: 'Lo que comenzó en nuestra propia cocina como el amor por reunir a nuestros seres queridos en torno a la mesa, hoy se transforma en Banquetería Lina. Creemos firmemente que la buena mesa no es solo comida: es empatía, calidez y momentos inolvidables compartidos con las personas que más quieres.',
+                                    about_paragraph2: 'Cada empanadita horneada al punto, cada tabla gourmet montada a mano y cada estación de café lleva el sello de dedicación de nuestra familia. Nos encargamos personalmente de cada banquete para que tú solo te dediques a disfrutar como un anfitrión radiante.',
+                                    about_image_url: '/images/estacion_coffee.jpg'
+                                  }))}
+                                  className="text-xs text-[#E5C384] hover:underline transition-all flex items-center gap-1 cursor-pointer"
+                                >
+                                  <RefreshCw className="w-3 h-3" /> Restablecer Sección por Defecto
+                                </button>
+                              </div>
+
+                              <div className="space-y-4">
+                                
+                                {/* Visibilidad de la Sección */}
+                                <div className="bg-[#1A120C] p-4 rounded-xl border border-[#D9822B]/20 flex items-center justify-between">
+                                  <div>
+                                    <h6 className="text-xs font-bold text-[#E5C384]">Visibilidad de la Sección en la Portada</h6>
+                                    <p className="text-[11px] text-[#A6988B]">Puedes mostrar u ocultar la sección de "¿Quiénes Somos?" en el inicio.</p>
+                                  </div>
+                                  <label className="flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                      type="checkbox"
+                                      checked={config.show_about_section === 'true' || config.show_about_section === true}
+                                      onChange={(e) => setConfig({ ...config, show_about_section: e.target.checked ? 'true' : 'false' })}
+                                      className="w-4 h-4 accent-[#D9822B] rounded cursor-pointer"
+                                    />
+                                    <span className="text-xs font-semibold text-[#FAF6F0]">
+                                      {(config.show_about_section === 'true' || config.show_about_section === true) ? '👁️ Visible' : '🙈 Oculta'}
+                                    </span>
+                                  </label>
+                                </div>
+
+                                {(config.show_about_section === 'true' || config.show_about_section === true) && (
+                                  <>
+                                    {/* Imagen de la Sección */}
+                                    <div className="bg-[#1A120C] p-4 rounded-xl border border-[#D9822B]/20 space-y-3">
+                                      <label className="text-xs font-bold text-[#FAF6F0] block">
+                                        Imagen Destacada de la Sección (Familia / Estación Gourmet)
+                                      </label>
+
+                                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                                        <div className="sm:col-span-4 text-center">
+                                          <div className="w-full h-32 rounded-xl overflow-hidden border border-[#D9822B]/40 bg-[#120B07] flex items-center justify-center">
+                                            {config.about_image_url ? (
+                                              <img 
+                                                src={config.about_image_url} 
+                                                alt="Vista Previa Quiénes Somos" 
+                                                className="w-full h-full object-cover"
+                                              />
+                                            ) : (
+                                              <span className="text-xs text-[#A6988B]">Sin imagen</span>
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        <div className="sm:col-span-8 space-y-2">
+                                          <div
+                                            onDragOver={(e) => { e.preventDefault(); setIsAboutDragging(true); }}
+                                            onDragLeave={() => setIsAboutDragging(false)}
+                                            onDrop={(e) => {
+                                              e.preventDefault();
+                                              setIsAboutDragging(false);
+                                              if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                                                handleAboutImageFileSelect(e.dataTransfer.files[0]);
+                                              }
+                                            }}
+                                            onClick={() => aboutImageFileInputRef.current?.click()}
+                                            className={`p-3 border-2 border-dashed rounded-xl text-center cursor-pointer transition-all ${
+                                              isAboutDragging 
+                                                ? 'border-[#D9822B] bg-[#D9822B]/20' 
+                                                : 'border-[#D9822B]/30 bg-[#120B07] hover:border-[#D9822B]/60'
+                                            }`}
+                                          >
+                                            <input 
+                                              type="file"
+                                              ref={aboutImageFileInputRef}
+                                              accept="image/*"
+                                              className="hidden"
+                                              onChange={(e) => e.target.files && handleAboutImageFileSelect(e.target.files[0])}
+                                            />
+                                            <Upload className="w-5 h-5 text-[#E5C384] mx-auto mb-1" />
+                                            <p className="text-xs font-semibold text-[#FAF6F0]">Clic para subir una nueva imagen o arrastra un archivo</p>
+                                          </div>
+
+                                          <div>
+                                            <input 
+                                              type="text"
+                                              value={config.about_image_url || ''}
+                                              onChange={(e) => setConfig({ ...config, about_image_url: e.target.value })}
+                                              placeholder="URL de la imagen (Ej: /images/estacion_coffee.jpg)"
+                                              className="w-full p-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-xl text-xs font-mono text-[#FAF6F0]"
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Campos de Texto */}
+                                    <div className="bg-[#1A120C] p-4 rounded-xl border border-[#D9822B]/20 space-y-3">
+                                      
+                                      <div>
+                                        <label className="text-xs font-bold text-[#FAF6F0] block mb-1">
+                                          Insignia Superior (Badge Label)
+                                        </label>
+                                        <input 
+                                          type="text"
+                                          value={config.about_badge_text || ''}
+                                          onChange={(e) => setConfig({ ...config, about_badge_text: e.target.value })}
+                                          placeholder="Ej: Nuestra Historia & Familia"
+                                          className="w-full p-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs font-semibold text-[#E5C384]"
+                                        />
+                                      </div>
+
+                                      <div>
+                                        <label className="text-xs font-bold text-[#FAF6F0] block mb-1">
+                                          Título Principal de la Sección
+                                        </label>
+                                        <input 
+                                          type="text"
+                                          value={config.about_title || ''}
+                                          onChange={(e) => setConfig({ ...config, about_title: e.target.value })}
+                                          placeholder="Ej: ¿Quiénes Somos?"
+                                          className="w-full p-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs font-sans font-bold text-[#FAF6F0]"
+                                        />
+                                      </div>
+
+                                      <div>
+                                        <label className="text-xs font-bold text-[#FAF6F0] block mb-1">
+                                          Frase / Cita Destacada (Cursiva)
+                                        </label>
+                                        <textarea 
+                                          rows={2}
+                                          value={config.about_quote || ''}
+                                          onChange={(e) => setConfig({ ...config, about_quote: e.target.value })}
+                                          placeholder="Ej: Somos la familia Quilodrán..."
+                                          className="w-full p-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs font-sans italic text-[#E5C384]"
+                                        />
+                                      </div>
+
+                                      <div>
+                                        <label className="text-xs font-bold text-[#FAF6F0] block mb-1">
+                                          Párrafo 1 (Historia Inicial)
+                                        </label>
+                                        <textarea 
+                                          rows={3}
+                                          value={config.about_paragraph1 || ''}
+                                          onChange={(e) => setConfig({ ...config, about_paragraph1: e.target.value })}
+                                          placeholder="Ej: Lo que comenzó en nuestra propia cocina..."
+                                          className="w-full p-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs text-[#FAF6F0]"
+                                        />
+                                      </div>
+
+                                      <div>
+                                        <label className="text-xs font-bold text-[#FAF6F0] block mb-1">
+                                          Párrafo 2 (Compromiso y Dedicación)
+                                        </label>
+                                        <textarea 
+                                          rows={3}
+                                          value={config.about_paragraph2 || ''}
+                                          onChange={(e) => setConfig({ ...config, about_paragraph2: e.target.value })}
+                                          placeholder="Ej: Cada empanadita horneada al punto..."
+                                          className="w-full p-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-lg text-xs text-[#FAF6F0]"
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {/* Vista Previa en Vivo de Quiénes Somos */}
+                                    <div className="pt-2">
+                                      <label className="text-xs font-semibold text-[#A6988B] block mb-1.5">
+                                        🔍 Vista Previa en Vivo de la Sección ¿Quiénes Somos?:
+                                      </label>
+                                      <div className="bg-[#160F0C] border border-[#D9822B]/40 rounded-2xl p-5 shadow-2xl relative overflow-hidden text-left">
+                                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+                                          <div className="sm:col-span-4">
+                                            <img 
+                                              src={config.about_image_url || "/images/estacion_coffee.jpg"} 
+                                              alt="Vista previa" 
+                                              className="w-full h-32 object-cover rounded-xl border border-[#D9822B]/30"
+                                            />
+                                          </div>
+                                          <div className="sm:col-span-8 space-y-2">
+                                            <span className="text-[10px] font-bold text-[#E5C384] uppercase tracking-widest block">
+                                              ❤️ {config.about_badge_text || 'Nuestra Historia & Familia'}
+                                            </span>
+                                            <h4 className="font-sans text-lg font-bold text-[#FAF6F0]">
+                                              {config.about_title || '¿Quiénes Somos?'}
+                                            </h4>
+                                            <p className="text-[11px] font-sans text-[#E5C384] italic truncate">
+                                              {config.about_quote}
+                                            </p>
+                                            <p className="text-[11px] text-[#A6988B] line-clamp-2">
+                                              {config.about_paragraph1}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                      </div>
+                    )}
                     
-                    {/* CATEGORY: LIMITS & FEES */}
+                    {/* CATEGORY: LIMITS & FEES ACCORDION */}
                     {(settingsSubCategory === 'all' || settingsSubCategory === 'limits') && (
-                      <div className="space-y-4">
-                        <h5 className="font-serif font-bold text-sm text-[#E5C384] border-b border-[#D9822B]/20 pb-2 flex items-center gap-2">
-                          💰 Límites y Tarifas del Servicio
-                        </h5>
-                        
-                        {/* Waiter Fee Input */}
-                        <div className="space-y-2 pb-4 border-b border-[#D9822B]/20">
-                          <div className="flex justify-between items-center">
-                            <label className="font-bold text-sm text-[#FAF6F0] block">Tarifa por Garzón ($ CLP)</label>
-                            <span className="text-xs font-mono text-[#E5C384] font-semibold">${config.waiter_fee.toLocaleString('es-CL')} CLP</span>
+                      <div className="bg-[#120B07] rounded-2xl border border-[#D9822B]/30 overflow-hidden transition-all shadow-md">
+                        <button
+                          type="button"
+                          onClick={() => toggleAccordion('limits')}
+                          className="w-full flex items-center justify-between p-4 bg-[#120B07] hover:bg-[#1A120C] transition-colors cursor-pointer text-left"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-xl bg-[#D9822B]/15 border border-[#D9822B]/30 text-[#E5C384]">
+                              <Sliders className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Límites y Tarifas del Servicio</h6>
+                              <p className="text-[11px] text-[#A6988B]">Tarifa por garzón, mínimo de compra y tope de porciones diarias.</p>
+                            </div>
                           </div>
-                          <p className="text-xs text-[#A6988B]">Costo por garzón contratado (bloque de 4 horas de servicio).</p>
-                          <input 
-                            type="number"
-                            value={config.waiter_fee}
-                            onChange={(e) => setConfig({ ...config, waiter_fee: Number(e.target.value) })}
-                            className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
-                          />
-                        </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-[#E5C384]">
+                              {openAccordions.limits ? 'Contraer' : 'Desplegar'}
+                            </span>
+                            {openAccordions.limits ? <ChevronUp className="w-5 h-5 text-[#E5C384]" /> : <ChevronDown className="w-5 h-5 text-[#E5C384]" />}
+                          </div>
+                        </button>
 
-                        {/* Min Order Total Input */}
-                        <div className="space-y-2 pb-4 border-b border-[#D9822B]/20">
-                          <div className="flex justify-between items-center">
-                            <label className="font-bold text-sm text-[#FAF6F0] block">Mínimo Económico de Compra ($ CLP)</label>
-                            <span className="text-xs font-mono text-[#E5C384] font-semibold">${config.min_order_total.toLocaleString('es-CL')} CLP</span>
-                          </div>
-                          <p className="text-xs text-[#A6988B]">Monto mínimo requerido en productos para habilitar el proceso de pago.</p>
-                          <input 
-                            type="number"
-                            value={config.min_order_total}
-                            onChange={(e) => setConfig({ ...config, min_order_total: Number(e.target.value) })}
-                            className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
-                          />
-                        </div>
+                        {openAccordions.limits && (
+                          <div className="p-5 border-t border-[#D9822B]/20 space-y-4">
+                            {/* Waiter Fee Input */}
+                            <div className="space-y-2 pb-4 border-b border-[#D9822B]/20">
+                              <div className="flex justify-between items-center">
+                                <label className="font-bold text-sm text-[#FAF6F0] block">Tarifa por Garzón ($ CLP)</label>
+                                <span className="text-xs font-mono text-[#E5C384] font-semibold">${config.waiter_fee.toLocaleString('es-CL')} CLP</span>
+                              </div>
+                              <p className="text-xs text-[#A6988B]">Costo por garzón contratado (bloque de 4 horas de servicio).</p>
+                              <input 
+                                type="number"
+                                value={config.waiter_fee}
+                                onChange={(e) => setConfig({ ...config, waiter_fee: Number(e.target.value) })}
+                                className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
+                              />
+                            </div>
 
-                        {/* Max Daily Portions Input */}
-                        <div className="space-y-2 pb-4 border-b border-[#D9822B]/20">
-                          <div className="flex justify-between items-center">
-                            <label className="font-bold text-sm text-[#FAF6F0] block">Límite Máximo de Porciones Diarias</label>
-                            <span className="text-xs font-mono text-[#E5C384] font-semibold">{config.max_daily_portions} Porciones</span>
+                            {/* Min Order Total Input */}
+                            <div className="space-y-2 pb-4 border-b border-[#D9822B]/20">
+                              <div className="flex justify-between items-center">
+                                <label className="font-bold text-sm text-[#FAF6F0] block">Mínimo Económico de Compra ($ CLP)</label>
+                                <span className="text-xs font-mono text-[#E5C384] font-semibold">${config.min_order_total.toLocaleString('es-CL')} CLP</span>
+                              </div>
+                              <p className="text-xs text-[#A6988B]">Monto mínimo requerido en productos para habilitar el proceso de pago.</p>
+                              <input 
+                                type="number"
+                                value={config.min_order_total}
+                                onChange={(e) => setConfig({ ...config, min_order_total: Number(e.target.value) })}
+                                className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
+                              />
+                            </div>
+
+                            {/* Max Daily Portions Input */}
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center">
+                                <label className="font-bold text-sm text-[#FAF6F0] block">Límite Máximo de Porciones Diarias</label>
+                                <span className="text-xs font-mono text-[#E5C384] font-semibold">{config.max_daily_portions} Porciones</span>
+                              </div>
+                              <p className="text-xs text-[#A6988B]">Tope máximo de porciones por pedido/día para evitar saturación en cocina y refrigeración.</p>
+                              <input 
+                                type="number"
+                                value={config.max_daily_portions}
+                                onChange={(e) => setConfig({ ...config, max_daily_portions: Number(e.target.value) })}
+                                className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
+                              />
+                            </div>
                           </div>
-                          <p className="text-xs text-[#A6988B]">Tope máximo de porciones por pedido/día para evitar saturación en cocina y refrigeración.</p>
-                          <input 
-                            type="number"
-                            value={config.max_daily_portions}
-                            onChange={(e) => setConfig({ ...config, max_daily_portions: Number(e.target.value) })}
-                            className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
-                          />
-                        </div>
+                        )}
                       </div>
                     )}
 
-                    {/* CATEGORY: CONTACT & BUSINESS HOURS */}
+                    {/* CATEGORY: CONTACT & BUSINESS HOURS ACCORDION */}
                     {(settingsSubCategory === 'all' || settingsSubCategory === 'contact') && (
-                      <div className="space-y-4 pt-2">
-                        <h5 className="font-serif font-bold text-sm text-[#E5C384] border-b border-[#D9822B]/20 pb-2 flex items-center gap-2">
-                          📞 Datos de Contacto y Horarios de Atención
-                        </h5>
-                        
-                        {/* Contact Phone / WhatsApp Input */}
-                        <div className="space-y-2 pb-4 border-b border-[#D9822B]/20">
-                          <div className="flex justify-between items-center">
-                            <label className="font-bold text-sm text-[#FAF6F0] block">Teléfono / WhatsApp Oficial de Contacto</label>
-                            <span className="text-xs font-mono text-[#25D366] font-semibold">{config.contact_phone}</span>
+                      <div className="bg-[#120B07] rounded-2xl border border-[#D9822B]/30 overflow-hidden transition-all shadow-md">
+                        <button
+                          type="button"
+                          onClick={() => toggleAccordion('contact')}
+                          className="w-full flex items-center justify-between p-4 bg-[#120B07] hover:bg-[#1A120C] transition-colors cursor-pointer text-left"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-xl bg-[#D9822B]/15 border border-[#D9822B]/30 text-[#E5C384]">
+                              <Phone className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Datos de Contacto y Horarios de Atención</h6>
+                              <p className="text-[11px] text-[#A6988B]">Teléfono/WhatsApp oficial, correo público y horario de atención.</p>
+                            </div>
                           </div>
-                          <p className="text-xs text-[#A6988B]">Número visible en la sección de Contacto. Habilita el enlace directo a WhatsApp.</p>
-                          <input 
-                            type="text"
-                            value={config.contact_phone}
-                            onChange={(e) => setConfig({ ...config, contact_phone: e.target.value })}
-                            placeholder="Ej: +56 9 3465 6961"
-                            className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
-                          />
-                        </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-[#E5C384]">
+                              {openAccordions.contact ? 'Contraer' : 'Desplegar'}
+                            </span>
+                            {openAccordions.contact ? <ChevronUp className="w-5 h-5 text-[#E5C384]" /> : <ChevronDown className="w-5 h-5 text-[#E5C384]" />}
+                          </div>
+                        </button>
 
-                        {/* Contact Email Input */}
-                        <div className="space-y-2 pb-4 border-b border-[#D9822B]/20">
-                          <div className="flex justify-between items-center">
-                            <label className="font-bold text-sm text-[#FAF6F0] block">Correo Electrónico Oficial de Contacto</label>
-                            <span className="text-xs font-mono text-[#E5C384] font-semibold">{config.contact_email}</span>
-                          </div>
-                          <p className="text-xs text-[#A6988B]">Correo desplegado públicamente en la página de Contacto.</p>
-                          <input 
-                            type="email"
-                            value={config.contact_email}
-                            onChange={(e) => setConfig({ ...config, contact_email: e.target.value })}
-                            placeholder="Ej: contacto@banqueterialina.cl"
-                            className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
-                          />
-                        </div>
+                        {openAccordions.contact && (
+                          <div className="p-5 border-t border-[#D9822B]/20 space-y-4">
+                            {/* Contact Phone / WhatsApp Input */}
+                            <div className="space-y-2 pb-4 border-b border-[#D9822B]/20">
+                              <div className="flex justify-between items-center">
+                                <label className="font-bold text-sm text-[#FAF6F0] block">Teléfono / WhatsApp Oficial de Contacto</label>
+                                <span className="text-xs font-mono text-[#25D366] font-semibold">{config.contact_phone}</span>
+                              </div>
+                              <p className="text-xs text-[#A6988B]">Número visible en la sección de Contacto. Habilita el enlace directo a WhatsApp.</p>
+                              <input 
+                                type="text"
+                                value={config.contact_phone}
+                                onChange={(e) => setConfig({ ...config, contact_phone: e.target.value })}
+                                placeholder="Ej: +56 9 3465 6961"
+                                className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
+                              />
+                            </div>
 
-                        {/* Business Hours Input */}
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <label className="font-bold text-sm text-[#FAF6F0] block">Días y Horario de Atención</label>
-                            <span className="text-xs font-mono text-[#E5C384] font-semibold">{config.business_hours}</span>
+                            {/* Contact Email Input */}
+                            <div className="space-y-2 pb-4 border-b border-[#D9822B]/20">
+                              <div className="flex justify-between items-center">
+                                <label className="font-bold text-sm text-[#FAF6F0] block">Correo Electrónico Oficial de Contacto</label>
+                                <span className="text-xs font-mono text-[#E5C384] font-semibold">{config.contact_email}</span>
+                              </div>
+                              <p className="text-xs text-[#A6988B]">Correo desplegado públicamente en la página de Contacto.</p>
+                              <input 
+                                type="email"
+                                value={config.contact_email}
+                                onChange={(e) => setConfig({ ...config, contact_email: e.target.value })}
+                                placeholder="Ej: contacto@banqueterialina.cl"
+                                className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
+                              />
+                            </div>
+
+                            {/* Business Hours Input */}
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center">
+                                <label className="font-bold text-sm text-[#FAF6F0] block">Días y Horario de Atención</label>
+                                <span className="text-xs font-mono text-[#E5C384] font-semibold">{config.business_hours}</span>
+                              </div>
+                              <p className="text-xs text-[#A6988B]">Horario de atención oficial que se exhibe a los clientes en la sección de Contacto.</p>
+                              <input 
+                                type="text"
+                                value={config.business_hours}
+                                onChange={(e) => setConfig({ ...config, business_hours: e.target.value })}
+                                placeholder="Ej: Lunes a Domingo de 09:00 a 19:00 hrs"
+                                className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
+                              />
+                            </div>
                           </div>
-                          <p className="text-xs text-[#A6988B]">Horario de atención oficial que se exhibe a los clientes en la sección de Contacto.</p>
-                          <input 
-                            type="text"
-                            value={config.business_hours}
-                            onChange={(e) => setConfig({ ...config, business_hours: e.target.value })}
-                            placeholder="Ej: Lunes a Domingo de 09:00 a 19:00 hrs"
-                            className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
-                          />
-                        </div>
+                        )}
                       </div>
                     )}
 
-                    {/* CATEGORY: TIME SLOTS */}
+                    {/* CATEGORY: TIME SLOTS ACCORDION */}
                     {(settingsSubCategory === 'all' || settingsSubCategory === 'time_slots') && (
-                      <div className="space-y-3 pt-4 border-t border-[#D9822B]/20">
-                        <div className="flex justify-between items-center">
-                          <label className="font-serif font-bold text-sm text-[#E5C384] block flex items-center gap-2">
-                            🕥 Bloques Horarios Seleccionables para Clientes
-                          </label>
-                        </div>
-                        <p className="text-xs text-[#A6988B]">
-                          Configura los bloques de horario de entrega o retiro que Lina y sus clientes podrán elegir en el Checkout. Agrega nuevos o elimina existentes según la disponibilidad de trabajo.
-                        </p>
-                        
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          {(config.time_slots ? config.time_slots.split(',').map(s => s.trim()).filter(Boolean) : []).map((slot, idx) => (
-                            <span 
-                              key={idx} 
-                              className="bg-[#120B07] text-[#FAF6F0] font-mono text-xs px-3 py-1.5 rounded-xl border border-[#D9822B]/40 flex items-center gap-2 group hover:border-[#D9822B]"
-                            >
-                              <span>{slot.includes('hrs') ? slot : `${slot} hrs`}</span>
+                      <div className="bg-[#120B07] rounded-2xl border border-[#D9822B]/30 overflow-hidden transition-all shadow-md">
+                        <button
+                          type="button"
+                          onClick={() => toggleAccordion('timeSlots')}
+                          className="w-full flex items-center justify-between p-4 bg-[#120B07] hover:bg-[#1A120C] transition-colors cursor-pointer text-left"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-xl bg-[#D9822B]/15 border border-[#D9822B]/30 text-[#E5C384]">
+                              <Clock className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Bloques Horarios Seleccionables para Clientes</h6>
+                              <p className="text-[11px] text-[#A6988B]">Rangos de horas elegibles en el Checkout para entregas y retiros.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-[#E5C384]">
+                              {openAccordions.timeSlots ? 'Contraer' : 'Desplegar'}
+                            </span>
+                            {openAccordions.timeSlots ? <ChevronUp className="w-5 h-5 text-[#E5C384]" /> : <ChevronDown className="w-5 h-5 text-[#E5C384]" />}
+                          </div>
+                        </button>
+
+                        {openAccordions.timeSlots && (
+                          <div className="p-5 border-t border-[#D9822B]/20 space-y-3">
+                            <p className="text-xs text-[#A6988B]">
+                              Configura los bloques de horario de entrega o retiro que Lina y sus clientes podrán elegir en el Checkout. Agrega nuevos o elimina existentes según la disponibilidad de trabajo.
+                            </p>
+                            
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              {(config.time_slots ? config.time_slots.split(',').map(s => s.trim()).filter(Boolean) : []).map((slot, idx) => (
+                                <span 
+                                  key={idx} 
+                                  className="bg-[#120B07] text-[#FAF6F0] font-mono text-xs px-3 py-1.5 rounded-xl border border-[#D9822B]/40 flex items-center gap-2 group hover:border-[#D9822B]"
+                                >
+                                  <span>{slot.includes('hrs') ? slot : `${slot} hrs`}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const currentList = config.time_slots.split(',').map(s => s.trim()).filter(Boolean);
+                                      const newList = currentList.filter((_, i) => i !== idx);
+                                      setConfig({ ...config, time_slots: newList.join(', ') });
+                                    }}
+                                    className="text-[#A6988B] hover:text-red-400 font-bold transition-colors ml-1 text-sm cursor-pointer"
+                                    title="Eliminar bloque horario"
+                                  >
+                                    ×
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-2">
+                              <input
+                                type="text"
+                                id="newSlotInput"
+                                placeholder="Ej: 18:00 - 20:00"
+                                className="flex-1 px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    const val = e.target.value.trim();
+                                    if (val) {
+                                      const currentList = config.time_slots ? config.time_slots.split(',').map(s => s.trim()).filter(Boolean) : [];
+                                      if (!currentList.includes(val)) {
+                                        currentList.push(val);
+                                        setConfig({ ...config, time_slots: currentList.join(', ') });
+                                      }
+                                      e.target.value = '';
+                                    }
+                                  }
+                                }}
+                              />
                               <button
                                 type="button"
                                 onClick={() => {
-                                  const currentList = config.time_slots.split(',').map(s => s.trim()).filter(Boolean);
-                                  const newList = currentList.filter((_, i) => i !== idx);
-                                  setConfig({ ...config, time_slots: newList.join(', ') });
-                                }}
-                                className="text-[#A6988B] hover:text-red-400 font-bold transition-colors ml-1 text-sm cursor-pointer"
-                                title="Eliminar bloque horario"
-                              >
-                                ×
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-
-                        <div className="flex items-center gap-2 pt-2">
-                          <input
-                            type="text"
-                            id="newSlotInput"
-                            placeholder="Ej: 18:00 - 20:00"
-                            className="flex-1 px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                const val = e.target.value.trim();
-                                if (val) {
-                                  const currentList = config.time_slots ? config.time_slots.split(',').map(s => s.trim()).filter(Boolean) : [];
-                                  if (!currentList.includes(val)) {
-                                    currentList.push(val);
-                                    setConfig({ ...config, time_slots: currentList.join(', ') });
+                                  const input = document.getElementById('newSlotInput');
+                                  if (input && input.value.trim()) {
+                                    const val = input.value.trim();
+                                    const currentList = config.time_slots ? config.time_slots.split(',').map(s => s.trim()).filter(Boolean) : [];
+                                    if (!currentList.includes(val)) {
+                                      currentList.push(val);
+                                      setConfig({ ...config, time_slots: currentList.join(', ') });
+                                    }
+                                    input.value = '';
                                   }
-                                  e.target.value = '';
-                                }
-                              }
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const input = document.getElementById('newSlotInput');
-                              if (input && input.value.trim()) {
-                                const val = input.value.trim();
-                                const currentList = config.time_slots ? config.time_slots.split(',').map(s => s.trim()).filter(Boolean) : [];
-                                if (!currentList.includes(val)) {
-                                  currentList.push(val);
-                                  setConfig({ ...config, time_slots: currentList.join(', ') });
-                                }
-                                input.value = '';
-                              }
-                            }}
-                            className="btn-secondary text-xs py-2.5 px-3.5 flex items-center gap-1 shrink-0 font-bold cursor-pointer"
-                          >
-                            <Plus className="w-3.5 h-3.5 text-[#E5C384]" /> Agregar Horario
-                          </button>
-                        </div>
+                                }}
+                                className="btn-secondary text-xs py-2.5 px-3.5 flex items-center gap-1 shrink-0 font-bold cursor-pointer"
+                              >
+                                <Plus className="w-3.5 h-3.5 text-[#E5C384]" /> Agregar Horario
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    {/* CATEGORY: TERMS & CONDITIONS */}
+                    {/* CATEGORY: TERMS & CONDITIONS ACCORDION */}
                     {(settingsSubCategory === 'all' || settingsSubCategory === 'terms') && (
-                      <div className="pt-4 border-t border-[#D9822B]/20 space-y-3">
-                        <h5 className="font-serif font-bold text-sm text-[#E5C384]">
-                          📝 Términos y Condiciones Oficiales (Editor Enriquecido)
-                        </h5>
-                        <p className="text-xs text-[#A6988B]">
-                          Edita el contenido completo de las políticas y términos que se publican en la página de Términos y Condiciones.
-                        </p>
-                        <RichTextEditor 
-                          value={config.terms_and_conditions || ''} 
-                          onChange={(newVal) => setConfig(prev => ({ ...prev, terms_and_conditions: newVal }))} 
-                        />
+                      <div className="bg-[#120B07] rounded-2xl border border-[#D9822B]/30 overflow-hidden transition-all shadow-md">
+                        <button
+                          type="button"
+                          onClick={() => toggleAccordion('terms')}
+                          className="w-full flex items-center justify-between p-4 bg-[#120B07] hover:bg-[#1A120C] transition-colors cursor-pointer text-left"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-xl bg-[#D9822B]/15 border border-[#D9822B]/30 text-[#E5C384]">
+                              <FileText className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Términos y Condiciones Oficiales (Editor Enriquecido)</h6>
+                              <p className="text-[11px] text-[#A6988B]">Edita el contenido completo de las políticas y términos del sitio.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-[#E5C384]">
+                              {openAccordions.terms ? 'Contraer' : 'Desplegar'}
+                            </span>
+                            {openAccordions.terms ? <ChevronUp className="w-5 h-5 text-[#E5C384]" /> : <ChevronDown className="w-5 h-5 text-[#E5C384]" />}
+                          </div>
+                        </button>
+
+                        {openAccordions.terms && (
+                          <div className="p-5 border-t border-[#D9822B]/20 space-y-3">
+                            <RichTextEditor 
+                              value={config.terms_and_conditions || ''} 
+                              onChange={(newVal) => setConfig(prev => ({ ...prev, terms_and_conditions: newVal }))} 
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* COMMUNE MANAGEMENT & DELIVERY FEES ACCORDION */}
+                    {(settingsSubCategory === 'all' || settingsSubCategory === 'limits') && (
+                      <div className="bg-[#120B07] rounded-2xl border border-[#D9822B]/30 overflow-hidden transition-all shadow-md">
+                        <button
+                          type="button"
+                          onClick={() => toggleAccordion('communes')}
+                          className="w-full flex items-center justify-between p-4 bg-[#120B07] hover:bg-[#1A120C] transition-colors cursor-pointer text-left"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-xl bg-[#D9822B]/15 border border-[#D9822B]/30 text-[#E5C384]">
+                              <MapPin className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Cobertura de Despacho y Tarifas por Comuna</h6>
+                              <p className="text-[11px] text-[#A6988B]">Administra comunas habilitadas y valores del flete de envío.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-[#E5C384]">
+                              {openAccordions.communes ? 'Contraer' : 'Desplegar'}
+                            </span>
+                            {openAccordions.communes ? <ChevronUp className="w-5 h-5 text-[#E5C384]" /> : <ChevronDown className="w-5 h-5 text-[#E5C384]" />}
+                          </div>
+                        </button>
+
+                        {openAccordions.communes && (
+                          <div className="p-5 border-t border-[#D9822B]/20 space-y-4">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                              <div>
+                                <p className="text-xs text-[#A6988B]">
+                                  Administra las comunas de la Región Metropolitana con despacho habilitado y el valor del envío asociado.
+                                </p>
+                              </div>
+
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  setCommuneFormError('');
+                                  setNewCommuneName('');
+                                  setNewCommuneFee('4000');
+                                  setIsCreateCommuneOpen(true);
+                                }}
+                                className="btn-primary text-xs py-2 px-3 font-bold flex items-center gap-1.5 shrink-0 cursor-pointer"
+                              >
+                                <Plus className="w-4 h-4" /> Agregar Comuna
+                              </button>
+                            </div>
+
+                            {communeSuccessMsg && (
+                              <div className="bg-emerald-500/15 border border-emerald-500/40 p-3 rounded-xl text-emerald-300 text-xs font-semibold flex items-center gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                <span>{communeSuccessMsg}</span>
+                              </div>
+                            )}
+
+                            <div className="bg-[#120B07] rounded-xl border border-[#D9822B]/20 overflow-hidden shadow-lg">
+                              <div className="max-h-64 overflow-y-auto">
+                                <table className="w-full text-left text-xs text-[#FAF6F0]">
+                                  <thead className="bg-[#1A120C] text-[#E5C384] font-sans uppercase tracking-wider text-[11px] border-b border-[#D9822B]/20 sticky top-0 z-10">
+                                    <tr>
+                                      <th className="p-3">Comuna</th>
+                                      <th className="p-3">Tarifa de Despacho (CLP)</th>
+                                      <th className="p-3">Estado Cobertura</th>
+                                      <th className="p-3 text-right">Acciones</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-[#D9822B]/10">
+                                    {adminCommunes.length === 0 ? (
+                                      <tr>
+                                        <td colSpan={4} className="p-6 text-center text-[#A6988B] italic">
+                                          Cargando listado de comunas...
+                                        </td>
+                                      </tr>
+                                    ) : (
+                                      adminCommunes.map(c => (
+                                        <tr key={c.id} className="hover:bg-[#1A120C]/60 transition-colors">
+                                          <td className="p-3 font-bold text-[#FAF6F0]">
+                                            📍 {c.name}
+                                          </td>
+                                          <td className="p-3 font-mono font-bold text-[#E5C384]">
+                                            +${Number(c.delivery_fee || c.fee || 0).toLocaleString('es-CL')} CLP
+                                          </td>
+                                          <td className="p-3">
+                                            <button 
+                                              type="button"
+                                              onClick={() => handleToggleCommuneActive(c)}
+                                              className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all cursor-pointer ${
+                                                c.is_active 
+                                                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30' 
+                                                  : 'bg-red-500/15 text-red-300 border-red-500/40 hover:bg-red-500/30'
+                                              }`}
+                                            >
+                                              {c.is_active ? '✓ Habilitada' : '⛔ Deshabilitada'}
+                                            </button>
+                                          </td>
+                                          <td className="p-3 text-right">
+                                            <div className="flex items-center justify-end gap-1.5">
+                                              <button 
+                                                type="button"
+                                                onClick={() => {
+                                                  setEditingCommune(c);
+                                                  setEditCommuneName(c.name);
+                                                  setEditCommuneFee(c.delivery_fee || c.fee || '4000');
+                                                  setEditCommuneActive(c.is_active);
+                                                  setCommuneFormError('');
+                                                }}
+                                                className="p-1.5 bg-[#1A120C] hover:bg-[#D9822B]/20 text-[#E5C384] rounded-lg border border-[#D9822B]/30 transition-colors cursor-pointer"
+                                                title="Editar tarifa o nombre de comuna"
+                                              >
+                                                <Edit2 className="w-3.5 h-3.5" />
+                                              </button>
+                                              <button 
+                                                type="button"
+                                                onClick={() => handleDeleteCommune(c)}
+                                                className="p-1.5 bg-red-950/30 hover:bg-red-950/60 text-red-400 rounded-lg border border-red-500/30 transition-colors cursor-pointer"
+                                                title="Eliminar comuna"
+                                              >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                              </button>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      ))
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* CONFIG HISTORY AUDIT LOG ACCORDION */}
+                    {(settingsSubCategory === 'all' || settingsSubCategory === 'audit') && (
+                      <div className="bg-[#120B07] rounded-2xl border border-[#D9822B]/30 overflow-hidden transition-all shadow-md">
+                        <button
+                          type="button"
+                          onClick={() => toggleAccordion('auditHistory')}
+                          className="w-full flex items-center justify-between p-4 bg-[#120B07] hover:bg-[#1A120C] transition-colors cursor-pointer text-left"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-xl bg-[#D9822B]/15 border border-[#D9822B]/30 text-[#E5C384]">
+                              <History className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Historial de Auditoría de Parámetros del Negocio</h6>
+                              <p className="text-[11px] text-[#A6988B]">Registro inmutable de modificaciones en tarifas y configuraciones ({configHistory.length} registros).</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-[#E5C384]">
+                              {openAccordions.auditHistory ? 'Contraer' : 'Desplegar'}
+                            </span>
+                            {openAccordions.auditHistory ? <ChevronUp className="w-5 h-5 text-[#E5C384]" /> : <ChevronDown className="w-5 h-5 text-[#E5C384]" />}
+                          </div>
+                        </button>
+
+                        {openAccordions.auditHistory && (
+                          <div className="p-5 border-t border-[#D9822B]/20 space-y-3">
+                            <p className="text-xs text-[#A6988B]">
+                              Registro inmutable para prevención de alteraciones no autorizadas en tarifas y límites del sistema.
+                            </p>
+
+                            {configHistory.length === 0 ? (
+                              <p className="text-xs text-[#A6988B] italic text-center py-6 bg-[#120B07] rounded-xl border border-[#D9822B]/10">
+                                Sin modificaciones registradas en los parámetros operativos aún.
+                              </p>
+                            ) : (
+                              <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                                {configHistory.map(item => (
+                                  <div key={item.id} className="bg-[#120B07] p-3.5 rounded-xl border border-[#D9822B]/20 space-y-1.5 hover:border-[#D9822B]/50 transition-all text-xs">
+                                    <div className="flex justify-between items-center border-b border-[#D9822B]/15 pb-1.5">
+                                      <span className="font-bold text-[#E5C384] flex items-center gap-1.5 text-[11px]">
+                                        👤 <strong className="text-[#FAF6F0]">{item.modified_by || 'Administración'}</strong>
+                                      </span>
+                                      <span className="font-mono text-[10px] text-[#A6988B]">
+                                        {new Date(item.timestamp).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' })}
+                                      </span>
+                                    </div>
+                                    <p className="text-[#FAF6F0] font-mono text-[11px] leading-relaxed bg-[#1A120C] p-2 rounded-lg border border-[#D9822B]/10">
+                                      🔧 {item.changes_summary}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -2994,158 +4474,6 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                       </button>
                     )}
 
-                    {/* COMMUNE MANAGEMENT & DELIVERY FEES SECTION */}
-                    {(settingsSubCategory === 'all' || settingsSubCategory === 'limits') && (
-                      <div className="pt-6 border-t border-[#D9822B]/20 space-y-4">
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                          <div>
-                            <h5 className="font-serif font-bold text-sm text-[#E5C384] flex items-center gap-2">
-                              🗺️ Cobertura de Despacho y Tarifas por Comuna
-                            </h5>
-                            <p className="text-xs text-[#A6988B]">
-                              Administra las comunas de la Región Metropolitana con despacho habilitado y el valor del envío asociado.
-                            </p>
-                          </div>
-
-                        <button 
-                          type="button"
-                          onClick={() => {
-                            setCommuneFormError('');
-                            setNewCommuneName('');
-                            setNewCommuneFee('4000');
-                            setIsCreateCommuneOpen(true);
-                          }}
-                          className="btn-primary text-xs py-2 px-3 font-bold flex items-center gap-1.5 shrink-0 cursor-pointer"
-                        >
-                          <Plus className="w-4 h-4" /> Agregar Comuna
-                        </button>
-                      </div>
-
-                      {communeSuccessMsg && (
-                        <div className="bg-emerald-500/15 border border-emerald-500/40 p-3 rounded-xl text-emerald-300 text-xs font-semibold flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                          <span>{communeSuccessMsg}</span>
-                        </div>
-                      )}
-
-                      <div className="bg-[#120B07] rounded-xl border border-[#D9822B]/20 overflow-hidden shadow-lg">
-                        <div className="max-h-64 overflow-y-auto">
-                          <table className="w-full text-left text-xs text-[#FAF6F0]">
-                            <thead className="bg-[#1A120C] text-[#E5C384] font-serif uppercase tracking-wider text-[11px] border-b border-[#D9822B]/20 sticky top-0 z-10">
-                              <tr>
-                                <th className="p-3">Comuna</th>
-                                <th className="p-3">Tarifa de Despacho (CLP)</th>
-                                <th className="p-3">Estado Cobertura</th>
-                                <th className="p-3 text-right">Acciones</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#D9822B]/10">
-                              {adminCommunes.length === 0 ? (
-                                <tr>
-                                  <td colSpan={4} className="p-6 text-center text-[#A6988B] italic">
-                                    Cargando listado de comunas...
-                                  </td>
-                                </tr>
-                              ) : (
-                                adminCommunes.map(c => (
-                                  <tr key={c.id} className="hover:bg-[#1A120C]/60 transition-colors">
-                                    <td className="p-3 font-bold text-[#FAF6F0]">
-                                      📍 {c.name}
-                                    </td>
-                                    <td className="p-3 font-mono font-bold text-[#E5C384]">
-                                      +${Number(c.delivery_fee || c.fee || 0).toLocaleString('es-CL')} CLP
-                                    </td>
-                                    <td className="p-3">
-                                      <button 
-                                        type="button"
-                                        onClick={() => handleToggleCommuneActive(c)}
-                                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all cursor-pointer ${
-                                          c.is_active 
-                                            ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30' 
-                                            : 'bg-red-500/15 text-red-300 border-red-500/40 hover:bg-red-500/30'
-                                        }`}
-                                      >
-                                        {c.is_active ? '✓ Habilitada' : '⛔ Deshabilitada'}
-                                      </button>
-                                    </td>
-                                    <td className="p-3 text-right">
-                                      <div className="flex items-center justify-end gap-1.5">
-                                        <button 
-                                          type="button"
-                                          onClick={() => {
-                                            setEditingCommune(c);
-                                            setEditCommuneName(c.name);
-                                            setEditCommuneFee(c.delivery_fee || c.fee || '4000');
-                                            setEditCommuneActive(c.is_active);
-                                            setCommuneFormError('');
-                                          }}
-                                          className="p-1.5 bg-[#1A120C] hover:bg-[#D9822B]/20 text-[#E5C384] rounded-lg border border-[#D9822B]/30 transition-colors cursor-pointer"
-                                          title="Editar tarifa o nombre de comuna"
-                                        >
-                                          <Edit2 className="w-3.5 h-3.5" />
-                                        </button>
-                                        <button 
-                                          type="button"
-                                          onClick={() => handleDeleteCommune(c)}
-                                          className="p-1.5 bg-red-950/30 hover:bg-red-950/60 text-red-400 rounded-lg border border-red-500/30 transition-colors cursor-pointer"
-                                          title="Eliminar comuna"
-                                        >
-                                          <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                ))
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                    {/* CONFIG HISTORY AUDIT LOG SECTION */}
-                    {(settingsSubCategory === 'all' || settingsSubCategory === 'audit') && (
-                      <div className="pt-6 border-t border-[#D9822B]/20 space-y-3">
-                        <div className="flex justify-between items-center">
-                          <h5 className="font-serif font-bold text-sm text-[#E5C384] flex items-center gap-2">
-                            <History className="w-4 h-4 text-[#D9822B]" />
-                            Historial de Auditoría de Parámetros del Negocio
-                          </h5>
-                          <span className="text-[11px] text-[#A6988B] font-mono">
-                            {configHistory.length} {configHistory.length === 1 ? 'registro' : 'registros'}
-                          </span>
-                        </div>
-                        <p className="text-xs text-[#A6988B]">
-                          Registro inmutable para prevención de alteraciones no autorizadas en tarifas y límites del sistema.
-                        </p>
-
-                        {configHistory.length === 0 ? (
-                          <p className="text-xs text-[#A6988B] italic text-center py-6 bg-[#120B07] rounded-xl border border-[#D9822B]/10">
-                            Sin modificaciones registradas en los parámetros operativos aún.
-                          </p>
-                        ) : (
-                          <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
-                            {configHistory.map(item => (
-                              <div key={item.id} className="bg-[#120B07] p-3.5 rounded-xl border border-[#D9822B]/20 space-y-1.5 hover:border-[#D9822B]/50 transition-all text-xs">
-                                <div className="flex justify-between items-center border-b border-[#D9822B]/15 pb-1.5">
-                                  <span className="font-bold text-[#E5C384] flex items-center gap-1.5 text-[11px]">
-                                    👤 <strong className="text-[#FAF6F0]">{item.modified_by || 'Administración'}</strong>
-                                  </span>
-                                  <span className="font-mono text-[10px] text-[#A6988B]">
-                                    {new Date(item.timestamp).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' })}
-                                  </span>
-                                </div>
-                                <p className="text-[#FAF6F0] font-mono text-[11px] leading-relaxed bg-[#1A120C] p-2 rounded-lg border border-[#D9822B]/10">
-                                  🔧 {item.changes_summary}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
                   </div>
                 </div>
               )}
@@ -3155,7 +4483,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                 <div className="space-y-6">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#D9822B]/20 pb-4">
                     <div>
-                      <h4 className="font-serif text-xl font-bold text-[#E5C384] flex items-center gap-2">
+                      <h4 className="font-sans text-xl font-bold text-[#E5C384] flex items-center gap-2">
                         <Eye className="w-6 h-6 text-[#D9822B]" />
                         Contador de Visitas & Analíticas de Tráfico Web
                       </h4>
@@ -3180,7 +4508,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                       <p className="text-2xl font-bold font-mono text-[#E5C384]">
                         {(visitData.total_visits || 0).toLocaleString('es-CL')}
                       </p>
-                      <span className="text-[10px] text-[#A6988B]">Total histórico registrado</span>
+                      <span className="text-[10px] text-[#A6988B]">Total histórico real</span>
                     </div>
 
                     <div className="glass-card p-4 rounded-xl border border-emerald-500/30 bg-[#120B07] space-y-2">
@@ -3208,10 +4536,269 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                     </div>
                   </div>
 
+                  {/* TRAFFIC EVOLUTION CHART SECTION */}
+                  <div className="glass-card p-5 rounded-xl border border-[#D9822B]/30 bg-[#120B07] space-y-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-[#D9822B]/20 pb-3">
+                      <div>
+                        <h5 className="font-sans font-bold text-sm text-[#E5C384] flex items-center gap-2">
+                          <Sliders className="w-4 h-4 text-[#D9822B]" />
+                          Gráfico de Evolución de Visitas
+                        </h5>
+                        <p className="text-[11px] text-[#A6988B]">
+                          {visitChartPeriod === 'daily_7' && 'Métricas de los últimos 7 días.'}
+                          {visitChartPeriod === 'monthly_12' && 'Métricas de los últimos 12 meses.'}
+                          {visitChartPeriod === 'yearly' && 'Métricas históricas por año.'}
+                        </p>
+                      </div>
+
+                      {/* Period Selector Filter Buttons */}
+                      <div className="flex items-center gap-1 bg-[#1A120C] p-1 rounded-xl border border-[#D9822B]/30">
+                        <button
+                          type="button"
+                          onClick={() => setVisitChartPeriod('daily_7')}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            visitChartPeriod === 'daily_7'
+                              ? 'bg-[#D9822B] text-white shadow-md'
+                              : 'text-[#A6988B] hover:text-[#FAF6F0] hover:bg-[#120B07]'
+                          }`}
+                        >
+                          7 Días
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setVisitChartPeriod('monthly_12')}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            visitChartPeriod === 'monthly_12'
+                              ? 'bg-[#D9822B] text-white shadow-md'
+                              : 'text-[#A6988B] hover:text-[#FAF6F0] hover:bg-[#120B07]'
+                          }`}
+                        >
+                          Mensual
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setVisitChartPeriod('yearly')}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            visitChartPeriod === 'yearly'
+                              ? 'bg-[#D9822B] text-white shadow-md'
+                              : 'text-[#A6988B] hover:text-[#FAF6F0] hover:bg-[#120B07]'
+                          }`}
+                        >
+                          Anual
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Chart Legend */}
+                    <div className="flex items-center justify-end gap-4 text-[11px] font-semibold">
+                      <span className="flex items-center gap-1.5 text-[#E5C384]">
+                        <span className="w-3 h-3 rounded-sm bg-gradient-to-t from-[#D9822B] to-[#E5C384] inline-block"></span>
+                        Visitas Totales
+                      </span>
+                      <span className="flex items-center gap-1.5 text-blue-400">
+                        <span className="w-3 h-3 rounded-sm bg-blue-500 inline-block"></span>
+                        Visitantes Únicos
+                      </span>
+                    </div>
+
+                    {/* Interactive SVG Line Chart Container */}
+                    {(() => {
+                      const items = visitData.chart_data ? (visitData.chart_data[visitChartPeriod] || []) : [];
+                      const maxVal = Math.max(...items.map(i => Math.max(i.visits || 0, i.uniques || 0)), 5);
+                      
+                      const svgWidth = 700;
+                      const svgHeight = 220;
+                      const paddingX = 45;
+                      const paddingTop = 25;
+                      const paddingBottom = 35;
+                      const graphWidth = svgWidth - paddingX * 2;
+                      const graphHeight = svgHeight - paddingTop - paddingBottom;
+
+                      const getCoords = (idx, val) => {
+                        const x = items.length > 1 
+                          ? paddingX + (idx / (items.length - 1)) * graphWidth 
+                          : svgWidth / 2;
+                        const y = paddingTop + graphHeight - (val / maxVal) * graphHeight;
+                        return { x, y };
+                      };
+
+                      // Generate SVG path for visits
+                      const visitsPoints = items.map((item, idx) => getCoords(idx, item.visits || 0));
+                      const visitsPath = visitsPoints.length > 0
+                        ? visitsPoints.reduce((acc, pt, i) => i === 0 ? `M ${pt.x} ${pt.y}` : `${acc} L ${pt.x} ${pt.y}`, '')
+                        : '';
+                      
+                      const visitsAreaPath = visitsPoints.length > 0
+                        ? `${visitsPath} L ${visitsPoints[visitsPoints.length - 1].x} ${paddingTop + graphHeight} L ${visitsPoints[0].x} ${paddingTop + graphHeight} Z`
+                        : '';
+
+                      // Generate SVG path for uniques
+                      const uniquesPoints = items.map((item, idx) => getCoords(idx, item.uniques || 0));
+                      const uniquesPath = uniquesPoints.length > 0
+                        ? uniquesPoints.reduce((acc, pt, i) => i === 0 ? `M ${pt.x} ${pt.y}` : `${acc} L ${pt.x} ${pt.y}`, '')
+                        : '';
+
+                      const uniquesAreaPath = uniquesPoints.length > 0
+                        ? `${uniquesPath} L ${uniquesPoints[uniquesPoints.length - 1].x} ${paddingTop + graphHeight} L ${uniquesPoints[0].x} ${paddingTop + graphHeight} Z`
+                        : '';
+
+                      return (
+                        <div className="bg-[#1A120C]/80 border border-[#D9822B]/20 p-4 rounded-xl space-y-2 relative overflow-hidden">
+                          {items.length === 0 ? (
+                            <div className="h-56 flex items-center justify-center text-xs text-[#A6988B] italic">
+                              Cargando métricas del período...
+                            </div>
+                          ) : (
+                            <div className="relative w-full overflow-x-auto">
+                              <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto min-w-[500px] overflow-visible">
+                                <defs>
+                                  <linearGradient id="gradientVisits" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#D9822B" stopOpacity="0.4" />
+                                    <stop offset="100%" stopColor="#D9822B" stopOpacity="0.0" />
+                                  </linearGradient>
+                                  <linearGradient id="gradientUniques" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.25" />
+                                    <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.0" />
+                                  </linearGradient>
+                                </defs>
+
+                                {/* Horizontal Grid Lines & Y-Axis Labels */}
+                                {[0, 0.25, 0.5, 0.75, 1].map((pct, i) => {
+                                  const yVal = paddingTop + graphHeight * (1 - pct);
+                                  const numVal = Math.round(maxVal * pct);
+                                  return (
+                                    <g key={i}>
+                                      <line 
+                                        x1={paddingX} 
+                                        y1={yVal} 
+                                        x2={svgWidth - paddingX} 
+                                        y2={yVal} 
+                                        stroke="#D9822B" 
+                                        strokeOpacity="0.15" 
+                                        strokeDasharray={i === 0 || i === 4 ? undefined : "3 3"} 
+                                      />
+                                      <text 
+                                        x={paddingX - 10} 
+                                        y={yVal + 3} 
+                                        fill="#A6988B" 
+                                        fontSize="9" 
+                                        fontFamily="monospace" 
+                                        textAnchor="end"
+                                      >
+                                        {numVal}
+                                      </text>
+                                    </g>
+                                  );
+                                })}
+
+                                {/* Area Fills */}
+                                {visitsAreaPath && <path d={visitsAreaPath} fill="url(#gradientVisits)" />}
+                                {uniquesAreaPath && <path d={uniquesAreaPath} fill="url(#gradientUniques)" />}
+
+                                {/* Lines */}
+                                {uniquesPath && (
+                                  <path 
+                                    d={uniquesPath} 
+                                    fill="none" 
+                                    stroke="#3B82F6" 
+                                    strokeWidth="2.5" 
+                                    strokeLinecap="round" 
+                                    strokeLinejoin="round" 
+                                  />
+                                )}
+                                {visitsPath && (
+                                  <path 
+                                    d={visitsPath} 
+                                    fill="none" 
+                                    stroke="#E5C384" 
+                                    strokeWidth="3" 
+                                    strokeLinecap="round" 
+                                    strokeLinejoin="round" 
+                                  />
+                                )}
+
+                                {/* Data Points (Nodes & Hover Labels) */}
+                                {items.map((item, idx) => {
+                                  const ptVisits = visitsPoints[idx];
+                                  const ptUniques = uniquesPoints[idx];
+                                  return (
+                                    <g key={idx} className="group cursor-pointer">
+                                      {/* Vertical hover guide line */}
+                                      <line 
+                                        x1={ptVisits.x} 
+                                        y1={paddingTop} 
+                                        x2={ptVisits.x} 
+                                        y2={paddingTop + graphHeight} 
+                                        stroke="#D9822B" 
+                                        strokeOpacity="0" 
+                                        className="group-hover:stroke-opacity-40 transition-opacity" 
+                                        strokeDasharray="2 2" 
+                                      />
+
+                                      {/* Uniques Point Circle */}
+                                      <circle 
+                                        cx={ptUniques.x} 
+                                        cy={ptUniques.y} 
+                                        r="4" 
+                                        fill="#120B07" 
+                                        stroke="#3B82F6" 
+                                        strokeWidth="2" 
+                                        className="transition-transform group-hover:r-6"
+                                      />
+
+                                      {/* Visits Point Circle */}
+                                      <circle 
+                                        cx={ptVisits.x} 
+                                        cy={ptVisits.y} 
+                                        r="5" 
+                                        fill="#D9822B" 
+                                        stroke="#FAF6F0" 
+                                        strokeWidth="2" 
+                                        className="transition-transform group-hover:r-7"
+                                      />
+
+                                      {/* Value label on node if > 0 */}
+                                      {(item.visits || 0) > 0 && (
+                                        <text 
+                                          x={ptVisits.x} 
+                                          y={ptVisits.y - 10} 
+                                          fill="#E5C384" 
+                                          fontSize="9" 
+                                          fontWeight="bold" 
+                                          fontFamily="monospace" 
+                                          textAnchor="middle"
+                                        >
+                                          {item.visits}
+                                        </text>
+                                      )}
+
+                                      {/* X Axis Date Label */}
+                                      <text 
+                                        x={ptVisits.x} 
+                                        y={svgHeight - 8} 
+                                        fill="#A6988B" 
+                                        fontSize="10" 
+                                        fontWeight="600" 
+                                        textAnchor="middle" 
+                                        className="group-hover:fill-[#E5C384] transition-colors"
+                                      >
+                                        {item.label}
+                                      </text>
+                                    </g>
+                                  );
+                                })}
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+
                   {/* Recent Access Logs Table */}
                   <div className="glass-card p-5 rounded-xl border border-[#D9822B]/20 bg-[#120B07] space-y-3">
                     <div className="flex justify-between items-center border-b border-[#D9822B]/15 pb-2">
-                      <h5 className="font-serif font-bold text-sm text-[#E5C384] flex items-center gap-2">
+                      <h5 className="font-sans font-bold text-sm text-[#E5C384] flex items-center gap-2">
                         <History className="w-4 h-4 text-[#D9822B]" />
                         Registro Reciente de Tráfico y Navegación (Últimos Accesos)
                       </h5>
@@ -3269,7 +4856,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
               {activeTab === 'calendar' && (
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-serif text-xl font-bold text-[#E5C384]">Gestión de Calendario: Bloqueo de Fechas & Reservas de Clientes</h4>
+                    <h4 className="font-sans text-xl font-bold text-[#E5C384]">Gestión de Calendario: Bloqueo de Fechas & Reservas de Clientes</h4>
                     <p className="text-xs text-[#A6988B] mt-0.5">
                       Bloquea días específicos o períodos completos para impedir nuevos pedidos. Revisa en paralelo las fechas ya agendadas por pedidos de clientes.
                     </p>
@@ -3278,149 +4865,165 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                   {/* Left / Right Split View Grid */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
-                    {/* LEFT PANEL: ADMIN BLOCKED DATES */}
-                    <div className="glass-card p-6 space-y-5 border border-red-500/30 bg-[#1D150F] rounded-xl shadow-lg">
-                      <div className="flex items-center gap-2.5 border-b border-red-500/20 pb-3">
-                        <div className="p-2 bg-red-500/20 text-red-400 rounded-lg border border-red-500/30">
-                          <CalendarX className="w-5 h-5" />
+                    {/* LEFT PANEL: ADMIN BLOCKED DATES (ACCORDION) */}
+                    <div className="glass-card overflow-hidden border border-[#D9822B]/30 bg-[#1D150F] rounded-2xl shadow-lg transition-all">
+                      <button
+                        type="button"
+                        onClick={() => toggleAccordion('blockDates')}
+                        className="w-full flex items-center justify-between p-5 bg-[#120B07] hover:bg-[#1A120C] transition-colors cursor-pointer text-left border-b border-[#D9822B]/20"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2.5 rounded-xl bg-[#D9822B]/15 border border-[#D9822B]/30 text-[#E5C384]">
+                            <CalendarX className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <h5 className="font-sans font-bold text-sm text-[#E5C384]">Bloquear Fechas (Impedir Pedidos)</h5>
+                            <p className="text-[11px] text-[#A6988B]">Selecciona fecha individual o período de inactividad</p>
+                          </div>
                         </div>
-                        <div>
-                          <h5 className="font-serif font-bold text-sm text-red-400">Bloquear Fechas (Impedir Pedidos)</h5>
-                          <p className="text-[11px] text-[#A6988B]">Selecciona fecha individual o período de inactividad</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold text-[#E5C384]">
+                            {openAccordions.blockDates ? 'Contraer' : 'Desplegar'}
+                          </span>
+                          {openAccordions.blockDates ? <ChevronUp className="w-5 h-5 text-[#E5C384]" /> : <ChevronDown className="w-5 h-5 text-[#E5C384]" />}
                         </div>
-                      </div>
+                      </button>
 
-                      {blockMsg && (
-                        <div className={`p-3 rounded-lg text-xs font-semibold flex items-center gap-2 ${
-                          blockMsg.includes('exitosamente') || blockMsg.includes('liberada')
-                            ? 'bg-green-950/40 border border-green-500/40 text-green-300'
-                            : 'bg-red-950/40 border border-red-500/40 text-red-300'
-                        }`}>
-                          <AlertTriangle className="w-4 h-4 shrink-0" />
-                          <span>{blockMsg}</span>
+                      {openAccordions.blockDates && (
+                        <div className="p-5 space-y-5">
+                          {blockMsg && (
+                            <div className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                              blockMsg.includes('exitosamente') || blockMsg.includes('liberada')
+                                ? 'bg-green-950/40 border border-green-500/40 text-green-300'
+                                : 'bg-amber-950/40 border border-amber-500/40 text-amber-300'
+                            }`}>
+                              <AlertTriangle className="w-4 h-4 shrink-0 text-[#E5C384]" />
+                              <span>{blockMsg}</span>
+                            </div>
+                          )}
+
+                          {/* Block Form */}
+                          <form onSubmit={handleBlockDatesSubmit} className="space-y-3.5 text-xs">
+                            {/* Selector de Modo: Día Único vs Rango */}
+                            <div className="flex gap-2 p-1 bg-[#120B07] rounded-xl border border-[#D9822B]/20">
+                              <button
+                                type="button"
+                                onClick={() => setBlockMode('single')}
+                                className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+                                  blockMode === 'single'
+                                    ? 'bg-[#D9822B] text-white font-bold shadow'
+                                    : 'text-[#A6988B] hover:text-[#FAF6F0]'
+                                }`}
+                              >
+                                📅 Día Único
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setBlockMode('range')}
+                                className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+                                  blockMode === 'range'
+                                    ? 'bg-[#D9822B] text-white font-bold shadow'
+                                    : 'text-[#A6988B] hover:text-[#FAF6F0]'
+                                }`}
+                              >
+                                📆 Rango de Fechas
+                              </button>
+                            </div>
+
+                            {blockMode === 'single' ? (
+                              <div>
+                                <label className="text-[#FAF6F0] font-semibold block mb-1">Seleccionar Fecha a Bloquear *</label>
+                                <input
+                                  type="date"
+                                  required
+                                  value={blockStartDate}
+                                  onChange={(e) => setBlockStartDate(e.target.value)}
+                                  className="w-full p-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
+                                />
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className="text-[#FAF6F0] font-semibold block mb-1">Fecha Desde *</label>
+                                  <input
+                                    type="date"
+                                    required
+                                    value={blockStartDate}
+                                    onChange={(e) => setBlockStartDate(e.target.value)}
+                                    className="w-full p-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-[#FAF6F0] font-semibold block mb-1">Fecha Hasta *</label>
+                                  <input
+                                    type="date"
+                                    required
+                                    value={blockEndDate}
+                                    onChange={(e) => setBlockEndDate(e.target.value)}
+                                    className="w-full p-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            <div>
+                              <label className="text-[#A6988B] font-semibold block mb-1">Motivo del Bloqueo</label>
+                              <input
+                                type="text"
+                                placeholder="Ej: Feriado / Vacaciones de Invierno / Mantención de Cocina"
+                                value={blockReason}
+                                onChange={(e) => setBlockReason(e.target.value)}
+                                className="w-full p-2.5 bg-[#120B07] border border-[#D9822B]/30 rounded-xl text-xs text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
+                              />
+                            </div>
+
+                            <button
+                              type="submit"
+                              disabled={isBlocking}
+                              className="w-full bg-[#D9822B] hover:bg-[#C06F1B] text-white font-bold py-3 rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2 border border-[#D9822B]/50 cursor-pointer"
+                            >
+                              <Lock className="w-4 h-4" />
+                              {isBlocking ? 'Bloqueando Fecha...' : 'Bloquear Fecha(s) Seleccionada(s)'}
+                            </button>
+                          </form>
+
+                          {/* Lista de Fechas Actualmente Bloqueadas */}
+                          <div className="pt-4 border-t border-[#D9822B]/20 space-y-3">
+                            <div className="flex justify-between items-center">
+                              <h6 className="font-sans font-bold text-xs text-[#E5C384] uppercase tracking-wider">
+                                Fechas Bloqueadas ({blockedDates.length})
+                              </h6>
+                              <span className="text-[10px] text-[#A6988B]">Click en "Liberar" para rehabilitar</span>
+                            </div>
+
+                            {blockedDates.length === 0 ? (
+                              <p className="text-xs text-[#A6988B] italic text-center py-6 bg-[#120B07] rounded-xl border border-[#D9822B]/10">
+                                No hay fechas bloqueadas actualmente por la administración.
+                              </p>
+                            ) : (
+                              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                                {blockedDates.map(bd => (
+                                  <div key={bd.id} className="bg-[#120B07] p-3 rounded-xl border border-[#D9822B]/30 flex items-center justify-between gap-3 hover:border-[#D9822B]/60 transition-all">
+                                    <div className="text-xs">
+                                      <span className="font-mono font-bold text-[#E5C384] text-sm block">📅 {bd.date}</span>
+                                      <span className="text-[11px] text-[#A6988B]">{bd.reason}</span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleUnlockDate(bd.id)}
+                                      className="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/40 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
+                                      title="Liberar fecha para volver a recibir pedidos"
+                                    >
+                                      <Unlock className="w-3.5 h-3.5" />
+                                      Liberar Fecha
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
-
-                      {/* Block Form */}
-                      <form onSubmit={handleBlockDatesSubmit} className="space-y-3.5 text-xs">
-                        {/* Selector de Modo: Día Único vs Rango */}
-                        <div className="flex gap-2 p-1 bg-[#120B07] rounded-xl border border-[#D9822B]/20">
-                          <button
-                            type="button"
-                            onClick={() => setBlockMode('single')}
-                            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
-                              blockMode === 'single'
-                                ? 'bg-red-600 text-white font-bold shadow'
-                                : 'text-[#A6988B] hover:text-[#FAF6F0]'
-                            }`}
-                          >
-                            📅 Día Único
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setBlockMode('range')}
-                            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
-                              blockMode === 'range'
-                                ? 'bg-red-600 text-white font-bold shadow'
-                                : 'text-[#A6988B] hover:text-[#FAF6F0]'
-                            }`}
-                          >
-                            📆 Rango de Fechas
-                          </button>
-                        </div>
-
-                        {blockMode === 'single' ? (
-                          <div>
-                            <label className="text-[#FAF6F0] font-semibold block mb-1">Seleccionar Fecha a Bloquear *</label>
-                            <input
-                              type="date"
-                              required
-                              value={blockStartDate}
-                              onChange={(e) => setBlockStartDate(e.target.value)}
-                              className="w-full p-2.5 bg-[#120B07] border border-red-500/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-red-500"
-                            />
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <label className="text-[#FAF6F0] font-semibold block mb-1">Fecha Desde *</label>
-                              <input
-                                type="date"
-                                required
-                                value={blockStartDate}
-                                onChange={(e) => setBlockStartDate(e.target.value)}
-                                className="w-full p-2.5 bg-[#120B07] border border-red-500/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-red-500"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-[#FAF6F0] font-semibold block mb-1">Fecha Hasta *</label>
-                              <input
-                                type="date"
-                                required
-                                value={blockEndDate}
-                                onChange={(e) => setBlockEndDate(e.target.value)}
-                                className="w-full p-2.5 bg-[#120B07] border border-red-500/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-red-500"
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                        <div>
-                          <label className="text-[#A6988B] font-semibold block mb-1">Motivo del Bloqueo</label>
-                          <input
-                            type="text"
-                            placeholder="Ej: Feriado / Vacaciones de Invierno / Mantención de Cocina"
-                            value={blockReason}
-                            onChange={(e) => setBlockReason(e.target.value)}
-                            className="w-full p-2.5 bg-[#120B07] border border-red-500/40 rounded-xl text-xs text-[#FAF6F0] focus:outline-none focus:border-red-500"
-                          />
-                        </div>
-
-                        <button
-                          type="submit"
-                          disabled={isBlocking}
-                          className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2 border border-red-500"
-                        >
-                          <Lock className="w-4 h-4" />
-                          {isBlocking ? 'Bloqueando Fecha...' : 'Bloquear Fecha(s) Seleccionada(s)'}
-                        </button>
-                      </form>
-
-                      {/* Lista de Fechas Actualmente Bloqueadas */}
-                      <div className="pt-4 border-t border-red-500/20 space-y-3">
-                        <div className="flex justify-between items-center">
-                          <h6 className="font-serif font-bold text-xs text-red-400 uppercase tracking-wider">
-                            Fechas Bloqueadas ({blockedDates.length})
-                          </h6>
-                          <span className="text-[10px] text-[#A6988B]">Click en "Liberar" para rehabilitar</span>
-                        </div>
-
-                        {blockedDates.length === 0 ? (
-                          <p className="text-xs text-[#A6988B] italic text-center py-6 bg-[#120B07] rounded-xl border border-red-500/10">
-                            No hay fechas bloqueadas actualmente por la administración.
-                          </p>
-                        ) : (
-                          <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                            {blockedDates.map(bd => (
-                              <div key={bd.id} className="bg-[#120B07] p-3 rounded-xl border border-red-500/30 flex items-center justify-between gap-3 hover:border-red-500/60 transition-all">
-                                <div className="text-xs">
-                                  <span className="font-mono font-bold text-red-400 text-sm block">📅 {bd.date}</span>
-                                  <span className="text-[11px] text-[#A6988B]">{bd.reason}</span>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => handleUnlockDate(bd.id)}
-                                  className="px-3 py-1.5 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/40 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shrink-0"
-                                  title="Liberar fecha para volver a recibir pedidos"
-                                >
-                                  <Unlock className="w-3.5 h-3.5" />
-                                  Liberar Fecha
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
                     </div>
 
                     {/* RIGHT PANEL: RESERVED DATES FROM CUSTOMERS */}
@@ -3430,7 +5033,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                           <Calendar className="w-5 h-5" />
                         </div>
                         <div>
-                          <h5 className="font-serif font-bold text-sm text-[#E5C384]">Fechas Reservadas por Pedidos</h5>
+                          <h5 className="font-sans font-bold text-sm text-[#E5C384]">Fechas Reservadas por Pedidos</h5>
                           <p className="text-[11px] text-[#A6988B]">Eventos y despachos agendados por clientes</p>
                         </div>
                       </div>
@@ -3486,7 +5089,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
               <div className="p-6 space-y-6 overflow-y-auto max-h-[75vh]">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#120B07] p-5 rounded-2xl border border-[#D9822B]/30 shadow-lg">
                   <div>
-                    <h4 className="font-serif text-base font-bold text-[#E5C384] flex items-center gap-2">
+                    <h4 className="font-sans text-base font-bold text-[#E5C384] flex items-center gap-2">
                       <ShieldCheck className="w-5 h-5 text-[#D9822B]" />
                       Gestión de Cuentas de Administrador
                     </h4>
@@ -3520,7 +5123,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                 <div className="bg-[#120B07] rounded-2xl border border-[#D9822B]/20 overflow-hidden shadow-xl">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs text-[#FAF6F0]">
-                      <thead className="bg-[#1A120C] text-[#E5C384] font-serif uppercase tracking-wider text-[11px] border-b border-[#D9822B]/20">
+                      <thead className="bg-[#1A120C] text-[#E5C384] font-sans uppercase tracking-wider text-[11px] border-b border-[#D9822B]/20">
                         <tr>
                           <th className="p-4">RUT (ID de Usuario)</th>
                           <th className="p-4">Nombre Completo</th>
@@ -3642,7 +5245,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                 {/* Header & Stats Banner */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#120B07] p-5 rounded-2xl border border-[#D9822B]/30 shadow-lg">
                   <div>
-                    <h4 className="font-serif text-lg font-bold text-[#E5C384] flex items-center gap-2">
+                    <h4 className="font-sans text-lg font-bold text-[#E5C384] flex items-center gap-2">
                       <History className="w-5 h-5 text-[#D9822B]" />
                       Bitácora de Auditoría y Seguridad del Sistema
                     </h4>
@@ -3751,13 +5354,13 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                   {getFilteredAuditLogs().length === 0 ? (
                     <div className="p-12 text-center text-[#A6988B] space-y-2">
                       <History className="w-10 h-10 mx-auto text-[#D9822B]/40" />
-                      <p className="font-serif font-bold text-sm text-[#FAF6F0]">No se encontraron registros de auditoría</p>
+                      <p className="font-sans font-bold text-sm text-[#FAF6F0]">No se encontraron registros de auditoría</p>
                       <p className="text-xs">Prueba ajustando los filtros de búsqueda por fecha, administrador o tipo de evento.</p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs text-[#FAF6F0]">
-                        <thead className="bg-[#1A120C] text-[#E5C384] font-serif uppercase tracking-wider text-[11px] border-b border-[#D9822B]/20">
+                        <thead className="bg-[#1A120C] text-[#E5C384] font-sans uppercase tracking-wider text-[11px] border-b border-[#D9822B]/20">
                           <tr>
                             <th className="p-4">Fecha y Hora</th>
                             <th className="p-4">Administrador Ejecutor</th>
@@ -3812,7 +5415,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
               <div className="fixed inset-0 z-70 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
                 <div className="glass-panel w-full max-w-2xl p-6 relative space-y-4 bg-[#1D150F] my-auto max-h-[90vh] overflow-y-auto">
                   <div className="flex justify-between items-center border-b border-[#D9822B]/20 pb-3">
-                    <h4 className="font-serif text-lg font-bold text-[#E5C384]">Crear Nueva Cuenta Administradora</h4>
+                    <h4 className="font-sans text-lg font-bold text-[#E5C384]">Crear Nueva Cuenta Administradora</h4>
                     <button onClick={() => setIsCreateAdminOpen(false)} className="text-[#A6988B] hover:text-[#FAF6F0]"><X className="w-5 h-5" /></button>
                   </div>
 
@@ -4015,7 +5618,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
               <div className="fixed inset-0 z-70 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
                 <div className="glass-panel w-full max-w-2xl p-6 relative space-y-4 bg-[#1D150F] my-auto max-h-[90vh] overflow-y-auto">
                   <div className="flex justify-between items-center border-b border-[#D9822B]/20 pb-3">
-                    <h4 className="font-serif text-lg font-bold text-[#E5C384]">Editar Administrador ({editingAdmin.username})</h4>
+                    <h4 className="font-sans text-lg font-bold text-[#E5C384]">Editar Administrador ({editingAdmin.username})</h4>
                     <button onClick={() => setEditingAdmin(null)} className="text-[#A6988B] hover:text-[#FAF6F0]"><X className="w-5 h-5" /></button>
                   </div>
 
@@ -4227,7 +5830,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         {(selectedClientModal.client_name || 'C').charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <h3 className="font-serif text-xl font-bold text-[#FAF6F0]">{selectedClientModal.client_name}</h3>
+                        <h3 className="font-sans text-xl font-bold text-[#FAF6F0]">{selectedClientModal.client_name}</h3>
                         <p className="text-xs text-[#E5C384] font-mono">{selectedClientModal.rut || 'Sin RUT registrado'}</p>
                       </div>
                     </div>
@@ -4288,11 +5891,11 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
 
                   {/* Orders History List */}
                   <div className="space-y-2">
-                    <h4 className="font-serif text-sm font-bold text-[#E5C384]">Historial de Pedidos & Registro de Devoluciones</h4>
+                    <h4 className="font-sans text-sm font-bold text-[#E5C384]">Historial de Pedidos & Registro de Devoluciones</h4>
                     {selectedClientModal.orders && selectedClientModal.orders.length > 0 ? (
                       <div className="overflow-x-auto border border-[#D9822B]/20 rounded-xl bg-[#120B07]">
                         <table className="w-full text-left text-xs">
-                          <thead className="bg-[#1A120C] text-[#E5C384] font-serif uppercase text-[10px]">
+                          <thead className="bg-[#1A120C] text-[#E5C384] font-sans uppercase text-[10px]">
                             <tr>
                               <th className="p-2.5">Código</th>
                               <th className="p-2.5">Servicio</th>
@@ -4318,7 +5921,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                                         isRefunded ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
                                         'bg-[#D9822B]/20 text-[#E5C384]'
                                       }`}>
-                                        {isRefunded ? 'CANCELADO & DEVOLUCIÓN' : ord.status}
+                                        {isRefunded ? 'Reembolsado' : ord.status}
                                       </span>
                                       {isRefunded && (
                                         <p className="text-[10px] font-mono text-red-400 font-bold">
@@ -4367,6 +5970,209 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
               </div>
             )}
 
+            {/* ATOMIZED CLIENT CREATE / EDIT MODAL (3NF) */}
+            {isClientModalOpen && (
+              <div className="fixed inset-0 z-75 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+                <div className="glass-panel w-full max-w-2xl p-6 relative space-y-4 bg-[#1D150F] my-auto max-h-[90vh] overflow-y-auto border border-[#D9822B]/30 rounded-2xl shadow-2xl">
+                  
+                  {/* Modal Header */}
+                  <div className="flex justify-between items-center border-b border-[#D9822B]/20 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#D9822B]/20 text-[#E5C384] flex items-center justify-center font-bold border border-[#D9822B]/30">
+                        <Users className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="font-sans text-base font-bold text-[#E5C384]">
+                          {editingClient ? `Editar Ficha Cliente 3NF: ${editingClient.full_name || editingClient.email}` : 'Registrar Nuevo Cliente (Estructura 3NF)'}
+                        </h4>
+                        <p className="text-[10px] text-[#A6988B]">Campos atómicos normalizados según estándar de la base de datos.</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setIsClientModalOpen(false)} className="text-[#A6988B] hover:text-[#FAF6F0] p-1">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {clientFormMsg.text && (
+                    <div className={`p-3 rounded-lg text-xs font-semibold flex items-center gap-2 ${
+                      clientFormMsg.type === 'success' 
+                        ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
+                        : 'bg-red-500/20 text-red-300 border border-red-500/30'
+                    }`}>
+                      {clientFormMsg.text}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSaveClientSubmit} className="space-y-4 text-xs">
+                    
+                    {/* Section 1: Nombres Atomizados (1NF) */}
+                    <div className="bg-[#120B07] p-3.5 rounded-xl border border-[#D9822B]/20 space-y-3">
+                      <p className="text-[11px] font-bold text-[#E5C384] uppercase tracking-wide flex items-center gap-1.5">
+                        <UserCheck className="w-3.5 h-3.5 text-[#D9822B]" />
+                        1. Nombres y Apellidos Atomizados (1NF)
+                      </p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1 font-semibold">Nombres *</label>
+                          <input 
+                            type="text" 
+                            required
+                            value={clientForm.first_name}
+                            onChange={e => setClientForm({...clientForm, first_name: e.target.value})}
+                            placeholder="Ej. Juan Carlos"
+                            className="w-full bg-[#1A120C] border border-[#D9822B]/30 rounded-lg px-3 py-2 text-[#FAF6F0] focus:border-[#D9822B] outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1 font-semibold">Apellido Paterno *</label>
+                          <input 
+                            type="text" 
+                            required
+                            value={clientForm.last_name_paternal}
+                            onChange={e => setClientForm({...clientForm, last_name_paternal: e.target.value})}
+                            placeholder="Ej. Pérez"
+                            className="w-full bg-[#1A120C] border border-[#D9822B]/30 rounded-lg px-3 py-2 text-[#FAF6F0] focus:border-[#D9822B] outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1">Apellido Materno</label>
+                          <input 
+                            type="text" 
+                            value={clientForm.last_name_maternal}
+                            onChange={e => setClientForm({...clientForm, last_name_maternal: e.target.value})}
+                            placeholder="Ej. Soto"
+                            className="w-full bg-[#1A120C] border border-[#D9822B]/30 rounded-lg px-3 py-2 text-[#FAF6F0] focus:border-[#D9822B] outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section 2: Identificación RUT Atomizada (1NF) */}
+                    <div className="bg-[#120B07] p-3.5 rounded-xl border border-[#D9822B]/20 space-y-3">
+                      <p className="text-[11px] font-bold text-[#E5C384] uppercase tracking-wide flex items-center gap-1.5">
+                        <FileText className="w-3.5 h-3.5 text-[#D9822B]" />
+                        2. Identificación RUT Atomizada (Cuerpo + DV)
+                      </p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div className="sm:col-span-3">
+                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1 font-semibold">Cuerpo RUT (Sin puntos ni guion)</label>
+                          <input 
+                            type="text" 
+                            value={clientForm.rut_body}
+                            onChange={e => setClientForm({...clientForm, rut_body: e.target.value.replace(/[^0-9]/g, '')})}
+                            placeholder="Ej. 18345678"
+                            className="w-full bg-[#1A120C] border border-[#D9822B]/30 rounded-lg px-3 py-2 text-[#FAF6F0] font-mono focus:border-[#D9822B] outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1 font-semibold">DV (Dígito)</label>
+                          <input 
+                            type="text" 
+                            maxLength={1}
+                            value={clientForm.rut_dv}
+                            onChange={e => setClientForm({...clientForm, rut_dv: e.target.value.toUpperCase()})}
+                            placeholder="Ej. K o 9"
+                            className="w-full bg-[#1A120C] border border-[#D9822B]/30 rounded-lg px-3 py-2 text-[#FAF6F0] font-mono text-center focus:border-[#D9822B] outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section 3: Contacto & Dirección (3NF FK Comuna) */}
+                    <div className="bg-[#120B07] p-3.5 rounded-xl border border-[#D9822B]/20 space-y-3">
+                      <p className="text-[11px] font-bold text-[#E5C384] uppercase tracking-wide flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-[#D9822B]" />
+                        3. Contacto & Ubicación Normalizada (3NF FK Comuna)
+                      </p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1 font-semibold">Correo Electrónico *</label>
+                          <input 
+                            type="email" 
+                            required
+                            value={clientForm.email}
+                            onChange={e => setClientForm({...clientForm, email: e.target.value})}
+                            placeholder="cliente@ejemplo.cl"
+                            className="w-full bg-[#1A120C] border border-[#D9822B]/30 rounded-lg px-3 py-2 text-[#FAF6F0] font-mono focus:border-[#D9822B] outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1 font-semibold">Teléfono de Contacto</label>
+                          <input 
+                            type="text" 
+                            value={clientForm.phone}
+                            onChange={e => setClientForm({...clientForm, phone: e.target.value})}
+                            placeholder="+56 9 1234 5678"
+                            className="w-full bg-[#1A120C] border border-[#D9822B]/30 rounded-lg px-3 py-2 text-[#FAF6F0] font-mono focus:border-[#D9822B] outline-none"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1 font-semibold">Comuna de Residencia (FK Normalizada)</label>
+                          <select 
+                            value={clientForm.commune_id}
+                            onChange={e => setClientForm({...clientForm, commune_id: e.target.value})}
+                            className="w-full bg-[#1A120C] border border-[#D9822B]/30 rounded-lg px-3 py-2 text-[#E5C384] focus:border-[#D9822B] outline-none"
+                          >
+                            <option value="">-- Sin Comuna Asignada --</option>
+                            {adminCommunes.map(com => (
+                              <option key={com.id} value={com.id}>
+                                {com.name} (+${Number(com.delivery_fee).toLocaleString('es-CL')} CLP)
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1">Calle, Número y Depto (Dirección Atomizada)</label>
+                          <input 
+                            type="text" 
+                            value={clientForm.address}
+                            onChange={e => setClientForm({...clientForm, address: e.target.value})}
+                            placeholder="Ej. Av. Providencia 1234, Depto 502"
+                            className="w-full bg-[#1A120C] border border-[#D9822B]/30 rounded-lg px-3 py-2 text-[#FAF6F0] focus:border-[#D9822B] outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Modal Footer Buttons */}
+                    <div className="flex gap-2 pt-2 border-t border-[#D9822B]/20">
+                      <button 
+                        type="button" 
+                        onClick={() => setIsClientModalOpen(false)} 
+                        className="btn-secondary text-xs flex-1 py-2.5"
+                      >
+                        Cancelar
+                      </button>
+                      <button 
+                        type="submit" 
+                        disabled={isSavingClient}
+                        className="btn-primary text-xs flex-1 py-2.5 font-bold flex items-center justify-center gap-1.5"
+                      >
+                        {isSavingClient ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Guardando...</span>
+                          </>
+                        ) : (
+                          <span>{editingClient ? 'Actualizar Ficha 3NF' : 'Crear Cliente 3NF'}</span>
+                        )}
+                      </button>
+                    </div>
+
+                  </form>
+                </div>
+              </div>
+            )}
+
 
 
             {/* ORDER DETAIL & MANDATORY REFUND AUDIT MODAL */}
@@ -4376,7 +6182,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                   
                   <div className="flex justify-between items-center border-b border-[#D9822B]/20 pb-3">
                     <div>
-                      <h4 className="font-serif text-lg font-bold text-[#E5C384]">Detalle Pedido: {selectedOrder.code}</h4>
+                      <h4 className="font-sans text-lg font-bold text-[#E5C384]">Detalle Pedido: {selectedOrder.code}</h4>
                     </div>
                     <button onClick={() => setSelectedOrder(null)} className="text-[#A6988B] hover:text-[#FAF6F0] p-1"><X className="w-5 h-5" /></button>
                   </div>
@@ -4468,7 +6274,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         </label>
                         {isRefunded ? (
                           <span className="text-[10px] font-bold text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded border border-purple-500/40">
-                            DEVOLUCIÓN REGISTRADA
+                            Reembolsado
                           </span>
                         ) : (newStatus || selectedOrder?.status) !== 'CANCELADO' && (
                           <span className="text-[10px] font-semibold text-amber-300/90 bg-amber-500/15 px-2 py-0.5 rounded border border-amber-500/30">
@@ -4619,7 +6425,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
 
                     {selectedOrder.history && selectedOrder.history.length > 0 && (
                       <div className="pt-3 border-t border-[#D9822B]/20">
-                        <span className="font-serif font-bold text-[#E5C384] block mb-2 flex items-center justify-between">
+                        <span className="font-sans font-bold text-[#E5C384] block mb-2 flex items-center justify-between">
                           <span>📜 Historial de Cambios y Auditoría</span>
                           <span className="text-[10px] text-[#A6988B] font-sans font-normal">{selectedOrder.history.length} registros</span>
                         </span>
@@ -4665,7 +6471,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
               <div className="fixed inset-0 z-70 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
                 <div className="glass-panel w-full max-w-md p-6 relative space-y-4 bg-[#1D150F]">
                   <div className="flex justify-between items-center border-b border-[#D9822B]/20 pb-3">
-                    <h4 className="font-serif text-lg font-bold text-[#E5C384]">
+                    <h4 className="font-sans text-lg font-bold text-[#E5C384]">
                       {editingCategory ? 'Editar Línea / Categoría' : 'Nueva Línea / Categoría'}
                     </h4>
                     <button onClick={() => setIsCategoryModalOpen(false)} className="text-[#A6988B] hover:text-[#FAF6F0]"><X className="w-5 h-5" /></button>
@@ -4742,7 +6548,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
               <div className="fixed inset-0 z-70 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
                 <div className="glass-panel w-full max-w-lg p-6 relative space-y-4 bg-[#1D150F] my-auto max-h-[85vh] overflow-y-auto">
                   <div className="flex justify-between items-center border-b border-[#D9822B]/20 pb-3">
-                    <h4 className="font-serif text-lg font-bold text-[#E5C384]">
+                    <h4 className="font-sans text-lg font-bold text-[#E5C384]">
                       {editingProduct ? 'Editar Producto del Catálogo' : 'Agregar Nuevo Producto'}
                     </h4>
                     <button onClick={() => setIsProductModalOpen(false)} className="text-[#A6988B] hover:text-[#FAF6F0]"><X className="w-5 h-5" /></button>
@@ -4908,7 +6714,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                       <AlertTriangle className="w-6 h-6" />
                     </div>
                     <div>
-                      <h4 className="font-serif text-base font-bold text-red-400">Eliminar Línea / Categoría</h4>
+                      <h4 className="font-sans text-base font-bold text-red-400">Eliminar Línea / Categoría</h4>
                       <p className="text-[11px] text-[#FAF6F0] font-semibold">{categoryToDelete.name}</p>
                     </div>
                   </div>
@@ -4971,7 +6777,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
               <div className="fixed inset-0 z-70 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
                 <div className="glass-panel w-full max-w-md p-6 relative space-y-4 bg-[#1D150F] border border-[#D9822B]/30 rounded-2xl shadow-2xl">
                   <div className="flex justify-between items-center border-b border-[#D9822B]/20 pb-3">
-                    <h4 className="font-serif text-base font-bold text-[#E5C384] flex items-center gap-2">
+                    <h4 className="font-sans text-base font-bold text-[#E5C384] flex items-center gap-2">
                       <Plus className="w-4 h-4 text-[#D9822B]" /> Agregar Nueva Comuna de Despacho
                     </h4>
                     <button onClick={() => setIsCreateCommuneOpen(false)} className="text-[#A6988B] hover:text-[#FAF6F0]"><X className="w-5 h-5" /></button>
@@ -5027,7 +6833,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
               <div className="fixed inset-0 z-70 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
                 <div className="glass-panel w-full max-w-md p-6 relative space-y-4 bg-[#1D150F] border border-[#D9822B]/30 rounded-2xl shadow-2xl">
                   <div className="flex justify-between items-center border-b border-[#D9822B]/20 pb-3">
-                    <h4 className="font-serif text-base font-bold text-[#E5C384] flex items-center gap-2">
+                    <h4 className="font-sans text-base font-bold text-[#E5C384] flex items-center gap-2">
                       <Edit2 className="w-4 h-4 text-[#D9822B]" /> Editar Comuna: {editingCommune.name}
                     </h4>
                     <button onClick={() => setEditingCommune(null)} className="text-[#A6988B] hover:text-[#FAF6F0]"><X className="w-5 h-5" /></button>
@@ -5094,7 +6900,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
           <div className="fixed inset-0 z-80 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
             <div className="glass-panel w-full max-w-md p-6 relative space-y-4 bg-[#1D150F] border border-[#D9822B]/30 rounded-2xl shadow-2xl">
               <div className="flex justify-between items-center border-b border-[#D9822B]/20 pb-3">
-                <h4 className="font-serif text-lg font-bold text-[#E5C384] flex items-center gap-2">
+                <h4 className="font-sans text-lg font-bold text-[#E5C384] flex items-center gap-2">
                   <Key className="w-5 h-5 text-[#D9822B]" />
                   Recuperación de Contraseña
                 </h4>

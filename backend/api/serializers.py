@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, MenuItem, Commune, BlockedDate, LeadCoupon, Order, OrderItem, OrderHistory, BusinessConfig, ConfigHistory, AdminUser, decrypt_value
+from .models import Category, MenuItem, Commune, BlockedDate, LeadCoupon, Order, OrderItem, OrderHistory, BusinessConfig, ConfigHistory, AdminUser, Client, decrypt_value
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -21,6 +21,24 @@ class CommuneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Commune
         fields = '__all__'
+
+class ClientSerializer(serializers.ModelSerializer):
+    full_name = serializers.ReadOnlyField()
+    formatted_rut = serializers.ReadOnlyField()
+    decrypted_phone = serializers.ReadOnlyField()
+    decrypted_address = serializers.ReadOnlyField()
+    decrypted_rut_body = serializers.ReadOnlyField()
+    commune_detail = CommuneSerializer(source='commune', read_only=True)
+
+    class Meta:
+        model = Client
+        fields = [
+            'id', 'first_name', 'last_name_paternal', 'last_name_maternal', 'full_name',
+            'rut_body', 'rut_dv', 'decrypted_rut_body', 'formatted_rut',
+            'email', 'phone', 'decrypted_phone',
+            'country', 'region', 'city', 'commune', 'commune_detail',
+            'address', 'decrypted_address', 'is_active', 'created_at', 'updated_at'
+        ]
 
 class BlockedDateSerializer(serializers.ModelSerializer):
     class Meta:

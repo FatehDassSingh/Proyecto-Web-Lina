@@ -1,13 +1,13 @@
 import React from 'react';
 import { Heart, MapPin, Eye } from 'lucide-react';
 
-export default function Footer({ onNavigate, onOpenAdmin, visitStats }) {
+export default function Footer({ onNavigate, onOpenAdmin, visitStats, logoUrl }) {
   // Schema.org CateringService structured data
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "CateringService",
     "name": "Banquetería Lina",
-    "image": "https://banqueterialina.cl/images/logo.jpeg",
+    "image": logoUrl || "https://banqueterialina.cl/images/logo.jpeg",
     "@id": "https://banqueterialina.cl",
     "url": "https://banqueterialina.cl",
     "telephone": "+56912345678",
@@ -35,7 +35,7 @@ export default function Footer({ onNavigate, onOpenAdmin, visitStats }) {
         
         {/* Brand Header */}
         <div className="flex items-center gap-4">
-          <img src="/images/logo_lina.png" className="h-16 md:h-20 w-auto object-contain" alt="Banquetería Lina Logo" />
+          <img src={logoUrl || "/images/logo_lina.png"} className="h-16 md:h-20 w-auto object-contain max-w-[240px]" alt="Banquetería Lina Logo" />
           <div>
             <h4 className="font-serif text-lg font-bold text-[#FAF6F0]">Banquetería Lina</h4>
             <div className="flex items-center gap-1.5 text-[11px] text-[#E5C384]">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, Mail, Clock, Send, CheckCircle2 } from 'lucide-react';
+import { Phone, Mail, Clock, Send, CheckCircle2, MessageCircle } from 'lucide-react';
 
 export default function ContactoPage({ businessConfig }) {
   const [formData, setFormData] = useState({ 
@@ -25,24 +25,25 @@ export default function ContactoPage({ businessConfig }) {
   };
 
   return (
-    <div className="py-16 px-4 max-w-5xl mx-auto space-y-12">
+    <div className="w-full bg-[#120B07] text-[#FAF6F0] min-h-[calc(100vh-80px)] py-16 px-4">
+      <div className="max-w-5xl mx-auto space-y-12">
       
-      {/* Page Header */}
-      <div className="text-center space-y-4">
-        <span className="badge-gold">Estamos para Atenderte</span>
-        <h1 className="font-serif text-4xl md:text-5xl font-bold text-[#FAF6F0]">
-          Contacto
-        </h1>
-        <p className="text-sm text-[#A6988B] max-w-xl mx-auto">
-          ¿Tienes consultas sobre tu banquete, disponibilidad o cotizaciones especiales? Escríbenos o llámanos directamente.
-        </p>
-      </div>
+        {/* Page Header */}
+        <div className="text-center space-y-4">
+          <span className="badge-gold">Estamos para Atenderte</span>
+          <h1 className="font-serif text-4xl md:text-5xl font-bold text-[#FAF6F0]">
+            Contacto
+          </h1>
+          <p className="text-sm text-[#A6988B] max-w-xl mx-auto">
+            ¿Tienes consultas sobre tu banquete, disponibilidad o cotizaciones especiales? Escríbenos o llámanos directamente.
+          </p>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        
-        {/* Contact Info Box */}
-        <div className="glass-card p-8 space-y-6 border border-[#D9822B]/30">
-          <h3 className="font-serif text-2xl font-bold text-[#E5C384]">Banquetería Lina</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+          
+          {/* Contact Info Box */}
+          <div className="glass-card p-8 space-y-6 border border-[#D9822B]/30 bg-[#1A120C]">
+            <h3 className="font-serif text-2xl font-bold text-[#E5C384]">Banquetería Lina</h3>
           
           <div className="space-y-4 text-xs text-[#FAF6F0]">
             <div className="flex items-start gap-3">
@@ -65,7 +66,7 @@ export default function ContactoPage({ businessConfig }) {
               </div>
             </div>
 
-            {/* Teléfono / WhatsApp as LAST ITEM rendered as an interactive Button */}
+            {/* WhatsApp as LAST ITEM rendered as an interactive Button */}
             <div className="pt-2">
               <a 
                 href={waUrl}
@@ -75,11 +76,11 @@ export default function ContactoPage({ businessConfig }) {
               >
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-lg bg-[#25D366]/25 text-[#25D366] border border-[#25D366]/40 shrink-0 group-hover:scale-110 transition-transform">
-                    <Phone className="w-5 h-5" />
+                    <MessageCircle className="w-5 h-5" />
                   </div>
                   <div>
                     <strong className="block text-sm text-[#FAF6F0] group-hover:text-[#25D366] transition-colors font-bold">
-                      Teléfono / WhatsApp
+                      WhatsApp
                     </strong>
                     <span className="text-xs font-mono text-[#A6988B]">{contactPhone}</span>
                   </div>
@@ -93,7 +94,7 @@ export default function ContactoPage({ businessConfig }) {
         </div>
 
         {/* Contact Form */}
-        <div className="glass-panel p-8">
+        <div className="glass-panel p-8 bg-[#1A120C]">
           {!isSubmitted ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               <h3 className="font-serif text-xl font-bold text-[#FAF6F0] mb-2">Envíanos un Mensaje</h3>
@@ -192,5 +193,6 @@ export default function ContactoPage({ businessConfig }) {
       </div>
 
     </div>
-  );
+  </div>
+);
 }

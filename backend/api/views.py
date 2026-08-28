@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.utils import timezone
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import random
 import string
 import os
@@ -12,10 +12,10 @@ from decimal import Decimal
 
 from django.contrib.auth.hashers import make_password, check_password
 
-from .models import Category, MenuItem, Commune, BlockedDate, LeadCoupon, Order, OrderItem, OrderHistory, BusinessConfig, ConfigHistory, AdminUser, SiteVisit, VisitLog
+from .models import Category, MenuItem, Commune, BlockedDate, LeadCoupon, Order, OrderItem, OrderHistory, BusinessConfig, ConfigHistory, AdminUser, SiteVisit, VisitLog, Client
 from .serializers import (
     CategorySerializer, CategoryDetailSerializer, MenuItemSerializer, CommuneSerializer, 
-    BlockedDateSerializer, LeadCouponSerializer, OrderSerializer, OrderHistorySerializer, BusinessConfigSerializer, ConfigHistorySerializer, AdminUserSerializer, SiteVisitSerializer, VisitLogSerializer
+    BlockedDateSerializer, LeadCouponSerializer, OrderSerializer, OrderHistorySerializer, BusinessConfigSerializer, ConfigHistorySerializer, AdminUserSerializer, SiteVisitSerializer, VisitLogSerializer, ClientSerializer
 )
 
 import json
@@ -543,7 +543,32 @@ def business_config_view(request):
         'contact_email': ('contacto@banqueterialina.cl', 'Correo Electrónico Oficial de Contacto'),
         'business_hours': ('Lunes a Domingo de 09:00 a 19:00 hrs', 'Horario de Atención Oficial'),
         'terms_and_conditions': (default_terms, 'Términos y Condiciones Oficiales en Formato HTML Enriquecido'),
-        'time_slots': ('10:00 - 12:00, 12:00 - 14:00, 14:00 - 16:00, 16:00 - 18:00', 'Bloques Horarios Disponibles (separados por coma)')
+        'time_slots': ('10:00 - 12:00, 12:00 - 14:00, 14:00 - 16:00, 16:00 - 18:00', 'Bloques Horarios Disponibles (separados por coma)'),
+        'site_logo': ('/images/logo_lina.png', 'Logo de la marca / sitio web'),
+        'site_favicon': ('/images/logo_lina.png', 'Favicon del sitio web (icono de pestaña del navegador)'),
+        'hero_title': ('El arte de comer rico', 'Título principal de la sección Hero'),
+        'hero_subtitle': ('Presentaciones gourmet artesanales, montajes decorativos y garzones para tus momentos inolvidables.', 'Subtítulo / Descripción de la sección Hero'),
+        'hero_badge_text': ('Banquetería Familiar en Santiago de Chile', 'Texto de la insignia superior del Hero'),
+        'show_hero_badge': ('true', 'Mostrar u ocultar la insignia superior del Hero'),
+        'show_hero_cards': ('true', 'Mostrar u ocultar las 3 tarjetas informativas del Hero'),
+        'hero_card1_title': ('3 Días de Anticipación', 'Título de la tarjeta 1 del Hero'),
+        'hero_card1_desc': ('Elaboración artesanal fresca con reserva previa.', 'Descripción de la tarjeta 1 del Hero'),
+        'hero_card2_title': ('Retiro o Montaje Sábados', 'Título de la tarjeta 2 del Hero'),
+        'hero_card2_desc': ('Retiro presencial Lun-Dom; montajes los Sábados.', 'Descripción de la tarjeta 2 del Hero'),
+        'hero_card3_title': ('Opción Garzones', 'Título de la tarjeta 3 del Hero'),
+        'hero_card3_desc': ('Cálculo automático de personal (1 cada 25 personas).', 'Descripción de la tarjeta 3 del Hero'),
+        'show_about_section': ('true', 'Mostrar u ocultar la sección ¿Quiénes Somos?'),
+        'about_badge_text': ('Nuestra Historia & Familia', 'Insignia superior de ¿Quiénes Somos?'),
+        'about_title': ('¿Quiénes Somos?', 'Título principal de ¿Quiénes Somos?'),
+        'about_quote': ('"Somos la familia Quilodrán y nos encanta dar una experiencia gastronómica acogedora. Orgullosamente de San Bernardo."', 'Cita / Frase destacada de ¿Quiénes Somos?'),
+        'about_paragraph1': ('Lo que comenzó en nuestra propia cocina como el amor por reunir a nuestros seres queridos en torno a la mesa, hoy se transforma en Banquetería Lina. Creemos firmemente que la buena mesa no es solo comida: es empatía, calidez y momentos inolvidables compartidos con las personas que más quieres.', 'Párrafo 1 de ¿Quiénes Somos?'),
+        'about_paragraph2': ('Cada empanadita horneada al punto, cada tabla gourmet montada a mano y cada estación de café lleva el sello de dedicación de nuestra familia. Nos encargamos personalmente de cada banquete para que tú solo te dediques a disfrutar como un anfitrión radiante.', 'Párrafo 2 de ¿Quiénes Somos?'),
+        'about_image_url': ('/images/estacion_coffee.jpg', 'Imagen descriptiva de ¿Quiénes Somos?'),
+        'theme_color_primary': ('#D9822B', 'Color primario de la página web (Botones y destacados)'),
+        'theme_color_secondary': ('#E5C384', 'Color secundario dorado de la página web'),
+        'theme_color_bg': ('#120B07', 'Color de fondo principal de la página web'),
+        'theme_color_card': ('#1A120C', 'Color de fondo de tarjetas y contenedores'),
+        'theme_color_text': ('#FAF6F0', 'Color del texto principal'),
     }
     for k, (val, desc) in defaults.items():
         BusinessConfig.objects.get_or_create(key=k, defaults={'value': val, 'description': desc})
@@ -572,7 +597,32 @@ def business_config_view(request):
                         'contact_email': 'Correo de Contacto',
                         'business_hours': 'Horario de Atención',
                         'terms_and_conditions': 'Términos y Condiciones',
-                        'time_slots': 'Bloques Horarios Disponibles'
+                        'time_slots': 'Bloques Horarios Disponibles',
+                        'site_logo': 'Logo del Sitio Web',
+                        'site_favicon': 'Favicon del Sitio Web',
+                        'hero_title': 'Título del Hero',
+                        'hero_subtitle': 'Subtítulo del Hero',
+                        'hero_badge_text': 'Texto Insignia del Hero',
+                        'show_hero_badge': 'Mostrar Insignia del Hero',
+                        'show_hero_cards': 'Mostrar Tarjetas del Hero',
+                        'hero_card1_title': 'Título Tarjeta 1',
+                        'hero_card1_desc': 'Descripción Tarjeta 1',
+                        'hero_card2_title': 'Título Tarjeta 2',
+                        'hero_card2_desc': 'Descripción Tarjeta 2',
+                        'hero_card3_title': 'Título Tarjeta 3',
+                        'hero_card3_desc': 'Descripción Tarjeta 3',
+                        'show_about_section': 'Mostrar Sección ¿Quiénes Somos?',
+                        'about_badge_text': 'Insignia de ¿Quiénes Somos?',
+                        'about_title': 'Título de ¿Quiénes Somos?',
+                        'about_quote': 'Cita de ¿Quiénes Somos?',
+                        'about_paragraph1': 'Párrafo 1 de ¿Quiénes Somos?',
+                        'about_paragraph2': 'Párrafo 2 de ¿Quiénes Somos?',
+                        'about_image_url': 'Imagen de ¿Quiénes Somos?',
+                        'theme_color_primary': 'Color Primario (Ámbar)',
+                        'theme_color_secondary': 'Color Secundario (Dorado)',
+                        'theme_color_bg': 'Color Fondo Principal',
+                        'theme_color_card': 'Color Fondo Tarjetas',
+                        'theme_color_text': 'Color Texto Principal',
                     }
                     field_name = label_map.get(k, k)
                     changes_list.append(f"{field_name}: {old_val} ➔ {str_val}")
@@ -792,6 +842,130 @@ def build_order_confirmation_email_html(order):
     """
     return html
 
+def parse_chilean_name(full_name):
+    """
+    Atomiza un nombre completo en (first_name, last_name_paternal, last_name_maternal)
+    cumpliendo 1NF (1ª Forma Normal).
+    """
+    if not full_name or not isinstance(full_name, str):
+        return ('Cliente', 'Registrado', '')
+    
+    words = [w.strip() for w in full_name.strip().split() if w.strip()]
+    if not words:
+        return ('Cliente', 'Registrado', '')
+    if len(words) == 1:
+        return (words[0].capitalize(), 'Registrado', '')
+    if len(words) == 2:
+        return (words[0].capitalize(), words[1].capitalize(), '')
+    if len(words) == 3:
+        return (words[0].capitalize(), words[1].capitalize(), words[2].capitalize())
+    
+    first_name = " ".join(w.capitalize() for w in words[:-2])
+    last_name_paternal = words[-2].capitalize()
+    last_name_maternal = words[-1].capitalize()
+    return (first_name, last_name_paternal, last_name_maternal)
+
+def parse_chilean_rut(rut_str):
+    """
+    Atomiza un RUT chileno en (rut_body, rut_dv) cumpliendo 1NF.
+    """
+    if not rut_str or not isinstance(rut_str, str):
+        return ('', '')
+    cleaned = re.sub(r'[^0-9kK]', '', rut_str.strip())
+    if not cleaned:
+        return ('', '')
+    if len(cleaned) == 1:
+        return (cleaned, '')
+    rut_body = cleaned[:-1]
+    rut_dv = cleaned[-1].upper()
+    return (rut_body, rut_dv)
+
+def get_or_create_client_atomized(
+    email, raw_name=None, raw_rut=None, phone=None, address=None, commune=None,
+    first_name=None, last_name_paternal=None, last_name_maternal=None,
+    rut_body=None, rut_dv=None
+):
+    """
+    Busca o crea una entidad Client en 3NF con datos atómicos.
+    """
+    if not email or not isinstance(email, str):
+        return None
+    
+    email_clean = email.strip().lower()
+    client = Client.objects.filter(email=email_clean).first()
+    
+    fn, lnp, lnm = parse_chilean_name(raw_name) if raw_name else (first_name, last_name_paternal, last_name_maternal)
+    rb, rdv = parse_chilean_rut(raw_rut) if raw_rut else (rut_body, rut_dv)
+
+    if not client:
+        client = Client(
+            email=email_clean,
+            first_name=fn or 'Cliente',
+            last_name_paternal=lnp or 'Registrado',
+            last_name_maternal=lnm or '',
+            rut_body=rb or '',
+            rut_dv=rdv or '',
+            phone=phone or '',
+            address=address or '',
+            commune=commune
+        )
+        client.save()
+    else:
+        updated = False
+        if fn and client.first_name in ['Cliente', '']:
+            client.first_name = fn
+            updated = True
+        if lnp and client.last_name_paternal in ['Registrado', '']:
+            client.last_name_paternal = lnp
+            updated = True
+        if lnm and not client.last_name_maternal:
+            client.last_name_maternal = lnm
+            updated = True
+        if rb and not client.rut_body:
+            client.rut_body = rb
+            client.rut_dv = rdv or ''
+            updated = True
+        if phone and not client.phone:
+            client.phone = phone
+            updated = True
+        if address and not client.address:
+            client.address = address
+            updated = True
+        if commune and not client.commune:
+            client.commune = commune
+            updated = True
+        if updated:
+            client.save()
+            
+    return client
+
+def sync_clients_from_legacy_orders():
+    """
+    Sincroniza y migra de forma transparente los registros legacy de Order y LeadCoupon
+    hacia la entidad normalizada Client (3NF).
+    """
+    orders = Order.objects.all().order_by('created_at')
+    for ord in orders:
+        dec_rut = ord.decrypted_rut or ord.client_rut or ''
+        dec_phone = ord.decrypted_phone or ord.client_phone or ''
+        dec_addr = ord.decrypted_address or ord.address or ''
+        
+        client_obj = get_or_create_client_atomized(
+            email=ord.client_email,
+            raw_name=ord.client_name,
+            raw_rut=dec_rut,
+            phone=dec_phone,
+            address=dec_addr,
+            commune=ord.commune
+        )
+        if client_obj and ord.client_id != client_obj.id:
+            ord.client = client_obj
+            ord.save(update_fields=['client'])
+            
+    leads = LeadCoupon.objects.all()
+    for lead in leads:
+        get_or_create_client_atomized(email=lead.email)
+
 @api_view(['POST'])
 def create_order(request):
     data = request.data
@@ -859,10 +1033,37 @@ def create_order(request):
     raw_guests_count = data.get('guests_count')
     guests_count = int(raw_guests_count) if raw_guests_count is not None and str(raw_guests_count).isdigit() else 0
 
+    commune_val = data.get('commune')
+    commune_obj = None
+    if isinstance(commune_val, int):
+        commune_obj = Commune.objects.filter(pk=commune_val).first()
+    elif isinstance(commune_val, str) and commune_val.isdigit():
+        commune_obj = Commune.objects.filter(pk=int(commune_val)).first()
+    elif isinstance(commune_val, str) and commune_val.strip():
+        commune_obj = Commune.objects.filter(name__iexact=commune_val.strip()).first()
+    if not commune_obj:
+        commune_id_val = data.get('commune_id')
+        if commune_id_val:
+            commune_obj = Commune.objects.filter(pk=commune_id_val).first()
+
+    client_email = (data.get('client_email') or '').strip().lower()
+    client_obj = None
+    if client_email:
+        client_obj = get_or_create_client_atomized(
+            email=client_email,
+            raw_name=data.get('client_name'),
+            raw_rut=client_rut,
+            phone=data.get('client_phone'),
+            address=data.get('address', ''),
+            commune=commune_obj
+        )
+
     order = Order.objects.create(
+        client=client_obj,
+        commune=commune_obj,
         client_name=data.get('client_name'),
         client_rut=client_rut,
-        client_email=data.get('client_email'),
+        client_email=client_email,
         client_phone=data.get('client_phone'),
         address=data.get('address', ''),
         service_type=data.get('service_type', 'RETIRO'),
@@ -1564,114 +1765,212 @@ def admin_communes(request, commune_id=None):
 @api_view(['GET'])
 def admin_clients_view(request):
     """
-    Returns aggregated client profile directory combining Order records and Lead registrations.
-    Includes decrypted RUT, phone, address, orders count, net total spent, total refunds, and coupon history.
+    Retorna el directorio de clientes estructurado en 3ª Forma Normal (3NF) con datos atomizados.
+    Combina registros atómicos de Client con métricas consolidadas de Pedidos y Lealtad.
     """
-    clients_map = {}
-
-    # 1. Process all Orders
-    orders = Order.objects.all().order_by('-created_at')
-    for ord in orders:
-        email_key = (ord.client_email or '').strip().lower()
-        if not email_key:
-            continue
-
-        dec_rut = ord.decrypted_rut or ord.client_rut or ''
-        dec_phone = ord.decrypted_phone or ord.client_phone or ''
-        dec_addr = ord.decrypted_address or ord.address or ''
-
-        if email_key not in clients_map:
-            clients_map[email_key] = {
-                'id': f"client_{email_key}",
-                'email': ord.client_email,
-                'client_name': ord.client_name or 'Cliente Registrado',
-                'rut': dec_rut,
-                'phone': dec_phone,
-                'address': dec_addr,
-                'total_orders': 0,
-                'active_orders': 0,
-                'refunded_orders': 0,
-                'gross_total': 0,         # Total Gross Sales ($ CLP)
-                'total_spent': 0,        # Net Retained Income ($ CLP)
-                'total_refunded': 0,     # Total Refunds ($ CLP)
-                'first_order_date': ord.created_at.strftime('%Y-%m-%d'),
-                'last_order_date': ord.created_at.strftime('%Y-%m-%d'),
-                'coupon_code': None,
-                'has_discount_lead': False,
-                'orders': []
-            }
-
-        client_entry = clients_map[email_key]
-        if ord.client_name and client_entry['client_name'] == 'Cliente Registrado':
-            client_entry['client_name'] = ord.client_name
-        if dec_rut and not client_entry['rut']:
-            client_entry['rut'] = dec_rut
-        if dec_phone and not client_entry['phone']:
-            client_entry['phone'] = dec_phone
-        if dec_addr and not client_entry['address']:
-            client_entry['address'] = dec_addr
-
-        client_entry['total_orders'] += 1
-        client_entry['gross_total'] += ord.final_total
+    sync_clients_from_legacy_orders()
+    
+    clients = Client.objects.all().select_related('commune').prefetch_related('orders').order_by('-created_at')
+    leads_map = {lead.email.strip().lower(): lead.coupon_code for lead in LeadCoupon.objects.all() if lead.email}
+    
+    result = []
+    for client in clients:
+        email_key = (client.email or '').strip().lower()
+        orders = list(client.orders.all().order_by('-created_at'))
         
-        # Calculate refund vs active amounts
-        is_canc_or_ref = (ord.status == 'CANCELADO' or ord.is_refunded)
-        refund_amt = ord.refund_amount if (ord.refund_amount and ord.refund_amount > 0) else (ord.final_total if is_canc_or_ref else 0)
+        if not orders and email_key:
+            orders = list(Order.objects.filter(client_email__iexact=email_key).order_by('-created_at'))
 
-        if is_canc_or_ref:
-            client_entry['refunded_orders'] += 1
-            client_entry['total_refunded'] += refund_amt
-        else:
-            client_entry['active_orders'] += 1
-            client_entry['total_spent'] += ord.final_total
+        total_orders = len(orders)
+        active_orders = 0
+        refunded_orders = 0
+        gross_total = 0
+        total_spent = 0
+        total_refunded = 0
+        
+        orders_serialized = []
+        for ord in orders:
+            gross_total += ord.final_total
+            is_canc_or_ref = (ord.status == 'CANCELADO' or ord.is_refunded)
+            refund_amt = ord.refund_amount if (ord.refund_amount and ord.refund_amount > 0) else (ord.final_total if is_canc_or_ref else 0)
+            
+            if is_canc_or_ref:
+                refunded_orders += 1
+                total_refunded += refund_amt
+            else:
+                active_orders += 1
+                total_spent += ord.final_total
 
-        client_entry['last_order_date'] = ord.created_at.strftime('%Y-%m-%d')
-        client_entry['orders'].append({
-            'id': ord.id,
-            'code': ord.code,
-            'event_date': ord.event_date.strftime('%Y-%m-%d') if ord.event_date else '',
-            'service_type': ord.service_type,
-            'final_total': ord.final_total,
-            'status': ord.status,
-            'is_refunded': ord.is_refunded,
-            'refund_amount': refund_amt,
-            'refund_voucher': ord.refund_voucher or None,
-            'created_at': ord.created_at.strftime('%Y-%m-%d %H:%M')
+            orders_serialized.append({
+                'id': ord.id,
+                'code': ord.code,
+                'event_date': ord.event_date.strftime('%Y-%m-%d') if ord.event_date else '',
+                'service_type': ord.service_type,
+                'final_total': ord.final_total,
+                'status': ord.status,
+                'is_refunded': ord.is_refunded,
+                'refund_amount': refund_amt,
+                'refund_voucher': ord.refund_voucher or None,
+                'created_at': ord.created_at.strftime('%Y-%m-%d %H:%M')
+            })
+
+        first_order_date = orders[-1].created_at.strftime('%Y-%m-%d') if orders else client.created_at.strftime('%Y-%m-%d')
+        last_order_date = orders[0].created_at.strftime('%Y-%m-%d') if orders else client.created_at.strftime('%Y-%m-%d')
+        
+        coupon_code = leads_map.get(email_key)
+
+        result.append({
+            'id': client.id,
+            'client_id': client.id,
+            'first_name': client.first_name,
+            'last_name_paternal': client.last_name_paternal,
+            'last_name_maternal': client.last_name_maternal or '',
+            'full_name': client.full_name,
+            'client_name': client.full_name,
+            'rut_body': client.decrypted_rut_body or '',
+            'rut_dv': client.rut_dv or '',
+            'formatted_rut': client.formatted_rut,
+            'rut': client.formatted_rut or 'Sin RUT registrado',
+            'email': client.email,
+            'phone': client.decrypted_phone or '',
+            'country': client.country,
+            'region': client.region,
+            'city': client.city,
+            'commune_id': client.commune_id,
+            'commune_name': client.commune.name if client.commune else '',
+            'address': client.decrypted_address or '',
+            'is_active': client.is_active,
+            'total_orders': total_orders,
+            'active_orders': active_orders,
+            'refunded_orders': refunded_orders,
+            'gross_total': gross_total,
+            'total_spent': total_spent,
+            'total_refunded': total_refunded,
+            'first_order_date': first_order_date,
+            'last_order_date': last_order_date,
+            'coupon_code': coupon_code,
+            'has_discount_lead': bool(coupon_code),
+            'orders': orders_serialized
         })
 
-    # 2. Process all Leads (Capturas de suscripción)
-    leads = LeadCoupon.objects.all().order_by('-created_at')
-    for lead in leads:
-        email_key = (lead.email or '').strip().lower()
-        if not email_key:
-            continue
+    result.sort(key=lambda x: (x['total_spent'], x['total_orders']), reverse=True)
+    return Response(result)
 
-        if email_key not in clients_map:
-            clients_map[email_key] = {
-                'id': f"client_{email_key}",
-                'email': lead.email,
-                'client_name': 'Cliente Prospecto',
-                'rut': 'Sin RUT registrado',
-                'phone': 'Sin teléfono',
-                'address': 'Sin dirección registrada',
-                'total_orders': 0,
-                'active_orders': 0,
-                'refunded_orders': 0,
-                'total_spent': 0,
-                'total_refunded': 0,
-                'first_order_date': lead.created_at.strftime('%Y-%m-%d'),
-                'last_order_date': lead.created_at.strftime('%Y-%m-%d'),
-                'coupon_code': lead.coupon_code,
-                'has_discount_lead': True,
-                'orders': []
-            }
-        else:
-            clients_map[email_key]['coupon_code'] = lead.coupon_code
-            clients_map[email_key]['has_discount_lead'] = True
+@api_view(['POST'])
+def admin_client_create_view(request):
+    """
+    Crea un nuevo registro de Cliente con datos atomizados (3NF).
+    """
+    data = request.data
+    email = data.get('email', '').strip().lower()
+    if not email:
+        return Response({'error': 'El correo electrónico es obligatorio.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if Client.objects.filter(email=email).exists():
+        return Response({'error': 'Ya existe un cliente registrado con este correo electrónico.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    raw_name = data.get('full_name') or data.get('client_name')
+    if raw_name and not (data.get('first_name') and data.get('last_name_paternal')):
+        fn, lnp, lnm = parse_chilean_name(raw_name)
+    else:
+        fn = data.get('first_name', 'Cliente').strip()
+        lnp = data.get('last_name_paternal', 'Registrado').strip()
+        lnm = data.get('last_name_maternal', '').strip()
 
-    clients_list = list(clients_map.values())
-    clients_list.sort(key=lambda x: (x['total_spent'], x['total_orders']), reverse=True)
-    return Response(clients_list)
+    raw_rut = data.get('rut')
+    if raw_rut and not data.get('rut_body'):
+        rb, rdv = parse_chilean_rut(raw_rut)
+    else:
+        rb = data.get('rut_body', '').strip()
+        rdv = data.get('rut_dv', '').strip()
+
+    commune_obj = None
+    commune_id = data.get('commune_id') or data.get('commune')
+    if commune_id and str(commune_id).isdigit():
+        commune_obj = Commune.objects.filter(pk=int(commune_id)).first()
+
+    client = Client(
+        first_name=fn or 'Cliente',
+        last_name_paternal=lnp or 'Registrado',
+        last_name_maternal=lnm or '',
+        rut_body=rb or '',
+        rut_dv=rdv or '',
+        email=email,
+        phone=data.get('phone', '').strip(),
+        country=data.get('country', 'Chile'),
+        region=data.get('region', 'Región Metropolitana de Santiago'),
+        city=data.get('city', 'Santiago'),
+        commune=commune_obj,
+        address=data.get('address', '').strip()
+    )
+    client.save()
+    serializer = ClientSerializer(client)
+    return Response({'success': True, 'message': 'Cliente creado exitosamente.', 'client': serializer.data}, status=status.HTTP_201_CREATED)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def admin_client_detail_view(request, client_id):
+    """
+    Obtiene, actualiza o elimina un cliente específico con sus datos atomizados (3NF).
+    """
+    client = Client.objects.filter(pk=client_id).first()
+    if not client:
+        return Response({'error': 'Cliente no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = ClientSerializer(client)
+        return Response(serializer.data)
+
+    elif request.method == 'DELETE':
+        client.delete()
+        return Response({'success': True, 'message': 'Cliente eliminado correctamente.'})
+
+    elif request.method in ['PUT', 'PATCH']:
+        data = request.data
+        if 'first_name' in data:
+            client.first_name = data['first_name'].strip()
+        if 'last_name_paternal' in data:
+            client.last_name_paternal = data['last_name_paternal'].strip()
+        if 'last_name_maternal' in data:
+            client.last_name_maternal = data['last_name_maternal'].strip()
+        
+        if 'rut_body' in data:
+            client.rut_body = str(data['rut_body']).strip()
+        if 'rut_dv' in data:
+            client.rut_dv = str(data['rut_dv']).strip().upper()
+        elif 'rut' in data and data['rut']:
+            rb, rdv = parse_chilean_rut(data['rut'])
+            client.rut_body = rb
+            client.rut_dv = rdv
+
+        if 'email' in data and data['email'].strip().lower() != client.email:
+            new_email = data['email'].strip().lower()
+            if Client.objects.filter(email=new_email).exclude(pk=client.id).exists():
+                return Response({'error': 'El correo ingresado ya pertenece a otro cliente.'}, status=status.HTTP_400_BAD_REQUEST)
+            client.email = new_email
+
+        if 'phone' in data:
+            client.phone = data['phone'].strip()
+        if 'address' in data:
+            client.address = data['address'].strip()
+        
+        if 'commune_id' in data:
+            cid = data['commune_id']
+            client.commune = Commune.objects.filter(pk=cid).first() if cid else None
+        elif 'commune' in data and str(data['commune']).isdigit():
+            client.commune = Commune.objects.filter(pk=int(data['commune'])).first()
+
+        if 'country' in data:
+            client.country = data['country'].strip()
+        if 'region' in data:
+            client.region = data['region'].strip()
+        if 'city' in data:
+            client.city = data['city'].strip()
+        if 'is_active' in data:
+            client.is_active = bool(data['is_active'])
+
+        client.save()
+        serializer = ClientSerializer(client)
+        return Response({'success': True, 'message': 'Cliente actualizado correctamente.', 'client': serializer.data})
 
 @api_view(['GET', 'POST'])
 def track_visit(request):
@@ -1698,29 +1997,111 @@ def track_visit(request):
             path=path
         )
 
-    # Calculate today's visits count
+    # Sync site_visit if legacy fake numbers exist
+    real_log_count = VisitLog.objects.count()
+    if site_visit.total_visits >= 1000 and real_log_count < 1000:
+        site_visit.total_visits = real_log_count
+        site_visit.total_uniques = VisitLog.objects.values('ip_address').distinct().count()
+        site_visit.save()
+
+    # Calculate today's visits count (honest count)
     today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
     today_count = VisitLog.objects.filter(created_at__gte=today_start).count()
 
     return Response({
         'total_visits': site_visit.total_visits,
         'total_uniques': site_visit.total_uniques,
-        'visits_today': max(today_count, 1)
+        'visits_today': today_count
     })
 
 @api_view(['GET'])
 def admin_visits(request):
     site_visit, _ = SiteVisit.objects.get_or_create(pk=1)
+    
+    # Sync site_visit if legacy fake numbers exist
+    real_log_count = VisitLog.objects.count()
+    if site_visit.total_visits >= 1000 and real_log_count < 1000:
+        site_visit.total_visits = real_log_count
+        site_visit.total_uniques = VisitLog.objects.values('ip_address').distinct().count()
+        site_visit.save()
+        
     logs = VisitLog.objects.all()[:50]
     logs_serializer = VisitLogSerializer(logs, many=True)
     
-    today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_count = VisitLog.objects.filter(created_at__gte=today_start).count()
+
+    # Build chart data for 7 days, 12 months, and yearly
+    days_es = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+    daily_7 = []
+    for i in range(6, -1, -1):
+        day_date = (now - timedelta(days=i)).date()
+        day_start = timezone.make_aware(datetime.combine(day_date, time.min))
+        day_end = timezone.make_aware(datetime.combine(day_date, time.max))
+        
+        v_cnt = VisitLog.objects.filter(created_at__range=(day_start, day_end)).count()
+        u_cnt = VisitLog.objects.filter(created_at__range=(day_start, day_end)).values('ip_address').distinct().count()
+        
+        daily_7.append({
+            'date_key': day_date.strftime('%Y-%m-%d'),
+            'label': f"{days_es[day_date.weekday()]} {day_date.strftime('%d/%m')}",
+            'visits': v_cnt,
+            'uniques': u_cnt
+        })
+
+    months_es = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+    monthly_12 = []
+    current_year = now.year
+    current_month = now.month
+    
+    for i in range(11, -1, -1):
+        m = current_month - i
+        y = current_year
+        while m <= 0:
+            m += 12
+            y -= 1
+            
+        m_start = timezone.make_aware(datetime(y, m, 1, 0, 0, 0))
+        if m == 12:
+            m_end = timezone.make_aware(datetime(y + 1, 1, 1, 0, 0, 0)) - timedelta(microseconds=1)
+        else:
+            m_end = timezone.make_aware(datetime(y, m + 1, 1, 0, 0, 0)) - timedelta(microseconds=1)
+            
+        v_cnt = VisitLog.objects.filter(created_at__range=(m_start, m_end)).count()
+        u_cnt = VisitLog.objects.filter(created_at__range=(m_start, m_end)).values('ip_address').distinct().count()
+        
+        monthly_12.append({
+            'date_key': f"{y}-{m:02d}",
+            'label': f"{months_es[m-1]} {y}",
+            'visits': v_cnt,
+            'uniques': u_cnt
+        })
+
+    yearly = []
+    for y in range(current_year - 4, current_year + 1):
+        y_start = timezone.make_aware(datetime(y, 1, 1, 0, 0, 0))
+        y_end = timezone.make_aware(datetime(y, 12, 31, 23, 59, 59))
+        
+        v_cnt = VisitLog.objects.filter(created_at__range=(y_start, y_end)).count()
+        u_cnt = VisitLog.objects.filter(created_at__range=(y_start, y_end)).values('ip_address').distinct().count()
+        
+        yearly.append({
+            'date_key': str(y),
+            'label': str(y),
+            'visits': v_cnt,
+            'uniques': u_cnt
+        })
 
     return Response({
         'total_visits': site_visit.total_visits,
         'total_uniques': site_visit.total_uniques,
-        'visits_today': max(today_count, 1),
+        'visits_today': today_count,
         'last_visit_at': site_visit.last_visit_at,
+        'chart_data': {
+            'daily_7': daily_7,
+            'monthly_12': monthly_12,
+            'yearly': yearly
+        },
         'logs': logs_serializer.data
     })

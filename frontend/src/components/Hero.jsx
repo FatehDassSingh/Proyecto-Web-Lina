@@ -1,7 +1,23 @@
 import React from 'react';
 import { Calendar, Clock, Users, Award, UtensilsCrossed, ArrowRight, Flame } from 'lucide-react';
 
-export default function Hero({ onNavigateToCarta }) {
+export default function Hero({ 
+  onNavigateToCarta, 
+  heroTitle, 
+  heroSubtitle,
+  heroBadgeText,
+  showHeroBadge = true,
+  showHeroCards = true,
+  heroCard1Title,
+  heroCard1Desc,
+  heroCard2Title,
+  heroCard2Desc,
+  heroCard3Title,
+  heroCard3Desc
+}) {
+  const isBadgeVisible = showHeroBadge !== false && showHeroBadge !== 'false';
+  const isCardsVisible = showHeroCards !== false && showHeroCards !== 'false';
+
   return (
     <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden py-16 px-4">
       
@@ -51,24 +67,26 @@ export default function Hero({ onNavigateToCarta }) {
 
       <div className="relative z-10 max-w-4xl mx-auto text-center space-y-6">
         
-        {/* Badge Header */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#160F0C]/85 border border-[#D9822B]/50 backdrop-blur-md mb-2 shadow-2xl">
-          <Award className="w-4 h-4 text-[#E5C384]" />
-          <span className="text-xs font-semibold uppercase tracking-widest text-[#E5C384]">
-            Banquetería Familiar en Santiago de Chile
-          </span>
-        </div>
+        {/* Badge Header (Toggleable & Editable) */}
+        {isBadgeVisible && (
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#160F0C]/85 border border-[#D9822B]/50 backdrop-blur-md mb-2 shadow-2xl transition-all">
+            <Award className="w-4 h-4 text-[#E5C384]" />
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#E5C384]">
+              {heroBadgeText || "Banquetería Familiar en Santiago de Chile"}
+            </span>
+          </div>
+        )}
 
         {/* Main Headline */}
         <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold text-[#FAF6F0] leading-[1.1] drop-shadow-[0_4px_14px_rgba(0,0,0,0.95)]">
           <span className="bg-gradient-to-r from-[#FFF5E6] via-[#E5C384] to-[#D9822B] bg-clip-text text-transparent">
-            El arte de comer rico
+            {heroTitle || "El arte de comer rico"}
           </span>
         </h1>
 
         {/* Subtitle */}
         <p className="text-base md:text-xl text-[#FAF6F0] max-w-2xl mx-auto font-medium leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] bg-[#160F0C]/50 p-3.5 rounded-2xl backdrop-blur-md border border-[#D9822B]/30">
-          Presentaciones gourmet artesanales, montajes decorativos y garzones para tus momentos inolvidables.
+          {heroSubtitle || "Presentaciones gourmet artesanales, montajes decorativos y garzones para tus momentos inolvidables."}
         </p>
 
         {/* Single CTA Button */}
@@ -83,40 +101,54 @@ export default function Hero({ onNavigateToCarta }) {
           </button>
         </div>
 
-        {/* Operating Conditions Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto text-left">
-          
-          <div className="glass-card p-4 flex items-start gap-3 backdrop-blur-md bg-[#160F0C]/90 border border-[#D9822B]/40 hover:border-[#D9822B] shadow-2xl transition-all">
-            <div className="p-2 rounded-lg bg-[#D9822B]/20 border border-[#D9822B]/40 text-[#E5C384] shrink-0">
-              <Calendar className="w-5 h-5" />
+        {/* Operating Conditions Grid (Toggleable & Editable) */}
+        {isCardsVisible && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto text-left transition-all">
+            
+            <div className="glass-card p-4 flex items-start gap-3 backdrop-blur-md bg-[#160F0C]/90 border border-[#D9822B]/40 hover:border-[#D9822B] shadow-2xl transition-all">
+              <div className="p-2 rounded-lg bg-[#D9822B]/20 border border-[#D9822B]/40 text-[#E5C384] shrink-0">
+                <Calendar className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-serif text-sm font-semibold text-[#FAF6F0]">
+                  {heroCard1Title || "3 Días de Anticipación"}
+                </h4>
+                <p className="text-[11px] text-[#A6988B] mt-0.5">
+                  {heroCard1Desc || "Elaboración artesanal fresca con reserva previa."}
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="font-serif text-sm font-semibold text-[#FAF6F0]">3 Días de Anticipación</h4>
-              <p className="text-[11px] text-[#A6988B] mt-0.5">Elaboración artesanal fresca con reserva previa.</p>
-            </div>
-          </div>
 
-          <div className="glass-card p-4 flex items-start gap-3 backdrop-blur-md bg-[#160F0C]/90 border border-[#D9822B]/40 hover:border-[#D9822B] shadow-2xl transition-all">
-            <div className="p-2 rounded-lg bg-[#D9822B]/20 border border-[#D9822B]/40 text-[#E5C384] shrink-0">
-              <Clock className="w-5 h-5" />
+            <div className="glass-card p-4 flex items-start gap-3 backdrop-blur-md bg-[#160F0C]/90 border border-[#D9822B]/40 hover:border-[#D9822B] shadow-2xl transition-all">
+              <div className="p-2 rounded-lg bg-[#D9822B]/20 border border-[#D9822B]/40 text-[#E5C384] shrink-0">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-serif text-sm font-semibold text-[#FAF6F0]">
+                  {heroCard2Title || "Retiro o Montaje Sábados"}
+                </h4>
+                <p className="text-[11px] text-[#A6988B] mt-0.5">
+                  {heroCard2Desc || "Retiro presencial Lun-Dom; montajes los Sábados."}
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="font-serif text-sm font-semibold text-[#FAF6F0]">Retiro o Montaje Sábados</h4>
-              <p className="text-[11px] text-[#A6988B] mt-0.5">Retiro presencial Lun-Dom; montajes los Sábados.</p>
-            </div>
-          </div>
 
-          <div className="glass-card p-4 flex items-start gap-3 backdrop-blur-md bg-[#160F0C]/90 border border-[#D9822B]/40 hover:border-[#D9822B] shadow-2xl transition-all">
-            <div className="p-2 rounded-lg bg-[#D9822B]/20 border border-[#D9822B]/40 text-[#E5C384] shrink-0">
-              <Users className="w-5 h-5" />
+            <div className="glass-card p-4 flex items-start gap-3 backdrop-blur-md bg-[#160F0C]/90 border border-[#D9822B]/40 hover:border-[#D9822B] shadow-2xl transition-all">
+              <div className="p-2 rounded-lg bg-[#D9822B]/20 border border-[#D9822B]/40 text-[#E5C384] shrink-0">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-serif text-sm font-semibold text-[#FAF6F0]">
+                  {heroCard3Title || "Opción Garzones"}
+                </h4>
+                <p className="text-[11px] text-[#A6988B] mt-0.5">
+                  {heroCard3Desc || "Cálculo automático de personal (1 cada 25 personas)."}
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="font-serif text-sm font-semibold text-[#FAF6F0]">Opción Garzones</h4>
-              <p className="text-[11px] text-[#A6988B] mt-0.5">Cálculo automático de personal (1 cada 25 personas).</p>
-            </div>
-          </div>
 
-        </div>
+          </div>
+        )}
 
       </div>
     </section>

@@ -7,7 +7,8 @@ export default function Header({
   onNavigate,
   onOpenCart,
   onOpenAdmin,
-  onOpenMarketing
+  onOpenMarketing,
+  logoUrl
 }) {
   return (
     <header className="sticky top-0 z-40 bg-[#120B07]/95 backdrop-blur-md border-b border-[#D9822B]/20 px-4 lg:px-8 py-3.5 shadow-xl">
@@ -20,9 +21,9 @@ export default function Header({
           title="Banquetería Lina - Inicio"
         >
           <img 
-            src="/images/logo_lina.png" 
+            src={logoUrl || "/images/logo_lina.png"} 
             alt="Banquetería Lina Logo" 
-            className="h-20 md:h-24 w-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-lg"
+            className="h-20 md:h-24 w-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-lg max-w-[280px]"
           />
         </div>
 

@@ -89,6 +89,80 @@ def decrypt_value(value):
     except Exception:
         return value
 
+class Client(models.Model):
+    """
+    Directorio de Clientes en 3ª Forma Normal (3NF) con datos atomizados.
+    Cumple 1NF (datos indivisibles), 2NF (dependencia funcional de la PK) y 3NF (sin dependencias transitivas).
+    Relacionado funcionalmente con Commune mediante Foreign Key.
+    """
+    first_name = models.CharField(max_length=75, default='Cliente', help_text="Primer y segundo nombre del cliente")
+    last_name_paternal = models.CharField(max_length=75, default='Registrado', help_text="Apellido paterno del cliente")
+    last_name_maternal = models.CharField(max_length=75, blank=True, null=True, default='', help_text="Apellido materno del cliente")
+    
+    rut_body = models.CharField(max_length=255, blank=True, null=True, default='', help_text="Cuerpo numérico del RUT cifrado en reposo")
+    rut_dv = models.CharField(max_length=10, blank=True, null=True, default='', help_text="Dígito verificador del RUT (0-9, K)")
+    
+    email = models.EmailField(unique=True, help_text="Correo electrónico único del cliente")
+    phone = models.CharField(max_length=255, blank=True, null=True, default='', help_text="Teléfono cifrado en reposo")
+    
+    country = models.CharField(max_length=50, default='Chile')
+    region = models.CharField(max_length=100, default='Región Metropolitana de Santiago')
+    city = models.CharField(max_length=100, default='Santiago')
+    commune = models.ForeignKey(Commune, on_delete=models.SET_NULL, null=True, blank=True, related_name='clients')
+    address = models.CharField(max_length=500, blank=True, null=True, default='', help_text="Calle, número, dpto cifrado en reposo")
+    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Cliente'
+        verbose_name_plural = 'Clientes'
+
+    def save(self, *args, **kwargs):
+        # Cifrado automático en reposo (AES-256)
+        if self.phone and not self.phone.startswith('enc::'):
+            self.phone = encrypt_value(self.phone)
+        if self.address and not self.address.startswith('enc::'):
+            self.address = encrypt_value(self.address)
+        if self.rut_body and not self.rut_body.startswith('enc::'):
+            self.rut_body = encrypt_value(self.rut_body)
+        super().save(*args, **kwargs)
+
+    @property
+    def decrypted_phone(self):
+        return decrypt_value(self.phone)
+
+    @property
+    def decrypted_address(self):
+        return decrypt_value(self.address)
+
+    @property
+    def decrypted_rut_body(self):
+        return decrypt_value(self.rut_body)
+
+    @property
+    def full_name(self):
+        maternal = f" {self.last_name_maternal}" if self.last_name_maternal else ""
+        return f"{self.first_name} {self.last_name_paternal}{maternal}".strip()
+
+    @property
+    def formatted_rut(self):
+        dec_body = self.decrypted_rut_body
+        if not dec_body:
+            return ""
+        try:
+            body_int = int(dec_body)
+            formatted_body = f"{body_int:,}".replace(',', '.')
+        except ValueError:
+            formatted_body = dec_body
+        dv = str(self.rut_dv or '').upper()
+        return f"{formatted_body}-{dv}" if dv else formatted_body
+
+    def __str__(self):
+        return f"{self.full_name} ({self.email})"
+
 class Order(models.Model):
     STATUS_CHOICES = [
         ('PENDIENTE', 'Pendiente de Validación'),
@@ -105,6 +179,7 @@ class Order(models.Model):
     ]
 
     code = models.CharField(max_length=20, unique=True, editable=False)
+    client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     client_name = models.CharField(max_length=150)
     client_rut = models.CharField(max_length=255, default='', blank=True, help_text="RUT cifrado en reposo")
     client_email = models.EmailField()
@@ -259,8 +334,8 @@ class AdminUser(models.Model):
         return f"{self.username} ({self.full_name} - RUT: {self.formatted_rut})"
 
 class SiteVisit(models.Model):
-    total_visits = models.BigIntegerField(default=1000)
-    total_uniques = models.BigIntegerField(default=420)
+    total_visits = models.BigIntegerField(default=0)
+    total_uniques = models.BigIntegerField(default=0)
     last_visit_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
