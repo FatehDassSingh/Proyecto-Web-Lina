@@ -170,30 +170,35 @@ export default function MarketingModal({ isOpen, onClose }) {
           )}
 
           {/* DYNAMIC QR GENERATOR */}
-          {activeTab === 'qr' && (
-            <div className="text-center py-6 space-y-6 max-w-md mx-auto">
-              <h4 className="font-serif text-xl font-bold text-[#E5C384]">Código QR para la Carta Digital</h4>
-              <p className="text-xs text-[#A6988B]">Imprime este código QR para colocarlo en servilletas, tarjetas o pendones del evento.</p>
-              
-              <div className="bg-white p-6 rounded-2xl shadow-2xl w-56 h-56 mx-auto flex items-center justify-center border-4 border-[#D9822B]">
-                <img 
-                  src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=http://127.0.0.1:5173" 
-                  alt="QR Code Banqueteria Lina"
-                  className="w-full h-full"
-                />
-              </div>
+          {activeTab === 'qr' && (() => {
+            const currentOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://banqueterialina.cl';
+            const qr200 = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentOrigin)}`;
+            const qr500 = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(currentOrigin)}`;
+            return (
+              <div className="text-center py-6 space-y-6 max-w-md mx-auto">
+                <h4 className="font-serif text-xl font-bold text-[#E5C384]">Código QR para la Carta Digital</h4>
+                <p className="text-xs text-[#A6988B]">Imprime este código QR para colocarlo en servilletas, tarjetas o pendones del evento.</p>
+                
+                <div className="bg-white p-6 rounded-2xl shadow-2xl w-56 h-56 mx-auto flex items-center justify-center border-4 border-[#D9822B]">
+                  <img 
+                    src={qr200} 
+                    alt="QR Code Banqueteria Lina"
+                    className="w-full h-full"
+                  />
+                </div>
 
-              <a 
-                href="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=http://127.0.0.1:5173" 
-                target="_blank" 
-                rel="noreferrer"
-                className="btn-primary inline-flex text-xs py-2.5 px-6 items-center gap-2"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Descargar QR Alta Resolución (PNG)
-              </a>
-            </div>
-          )}
+                <a 
+                  href={qr500} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="btn-primary inline-flex text-xs py-2.5 px-6 items-center gap-2"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Descargar QR Alta Resolución (PNG)
+                </a>
+              </div>
+            );
+          })()}
 
           {/* GOOGLE REVIEWS MODULE */}
           {activeTab === 'reviews' && (

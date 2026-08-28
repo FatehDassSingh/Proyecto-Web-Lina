@@ -125,6 +125,7 @@ def get_logo_email_url():
 
 def send_resend_welcome_email(to_email, coupon_code):
     logo_url = get_logo_email_url()
+    frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173').rstrip('/')
     
     html_content = f"""
     <!DOCTYPE html>
@@ -151,54 +152,36 @@ def send_resend_welcome_email(to_email, coupon_code):
                             <td style="padding: 35px 35px 20px 35px; text-align: center;">
                                 <h1 style="color: #E5C384; font-family: Georgia, serif; font-size: 24px; margin: 0 0 12px 0; font-weight: bold; letter-spacing: 0.5px;">
                                     ¡Felicidades y Bienvenido/a! 🎉
-                                </h1>
+                                </h1 >
                                 <p style="color: #FAF6F0; font-size: 15px; line-height: 1.6; margin: 0 0 15px 0;">
                                     Queremos liberar a los anfitriones del estrés y permitirles ser invitados en su propia fiesta. En <strong>Banquetería Lina</strong> nos encargamos del sabor, la presentación y cada detalle gourmet para que tú disfrutes al máximo.
                                 </p>
                             </td>
                         </tr>
 
-                        <!-- COUPON PROMO BOX -->
+                        <!-- COUPON CODE CONTAINER -->
                         <tr>
-                            <td style="padding: 0 35px 30px 35px;" align="center">
-                                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #1D150F; border: 2px dashed #E5C384; border-radius: 14px; text-align: center;">
-                                    <tr>
-                                        <td style="padding: 22px 20px;">
-                                            <span style="font-size: 11px; color: #A6988B; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; display: block; margin-bottom: 8px;">
-                                                Tu Código Exclusivo de 5% OFF
-                                            </span>
-                                            <div style="background-color: #120B07; display: inline-block; padding: 10px 24px; border-radius: 8px; border: 1px solid rgba(217, 130, 43, 0.4); margin: 6px 0;">
-                                                <strong style="font-family: 'Courier New', Courier, monospace; font-size: 28px; color: #E5C384; letter-spacing: 4px;">{coupon_code}</strong>
-                                            </div>
-                                            <p style="font-size: 12px; color: #FAF6F0; margin: 10px 0 0 0;">
-                                                Válido al ingresar este código durante la solicitud de servicio o checkout en nuestra web.
-                                            </p>
-                                        </td>
-                                    </tr>
-                                </table>
+                            <td style="padding: 0 35px 30px 35px;">
+                                <div style="background-color: #1A120C; border: 2px dashed #D9822B; border-radius: 14px; padding: 25px; text-align: center;">
+                                    <span style="font-size: 12px; color: #A6988B; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 8px; font-weight: bold;">
+                                        Tu Código Exclusivo de 5% OFF
+                                    </span>
+                                    <div style="font-size: 32px; font-weight: 800; color: #E5C384; letter-spacing: 4px; font-family: monospace; text-shadow: 0 2px 10px rgba(229, 195, 132, 0.3);">
+                                        {coupon_code}
+                                    </div>
+                                    <p style="font-size: 12px; color: #A6988B; margin: 10px 0 0 0;">
+                                        Válido para tu próximo pedido en toda nuestra carta web.
+                                    </p>
+                                </div>
                             </td>
                         </tr>
 
-                        <!-- FEATURED DISHES SECTION -->
+                        <!-- FEATURED MENU SELECTION -->
                         <tr>
-                            <td style="padding: 0 35px 30px 35px;">
-                                <h3 style="color: #E5C384; font-family: Georgia, serif; font-size: 17px; margin: 0 0 18px 0; border-bottom: 1px solid rgba(217, 130, 43, 0.25); padding-bottom: 8px; text-align: center;">
-                                    🌟 Platos & Cajas Destacadas de Nuestra Carta
+                            <td style="padding: 0 35px 25px 35px;">
+                                <h3 style="color: #E5C384; font-family: Georgia, serif; font-size: 18px; margin: 0 0 16px 0; border-bottom: 1px solid rgba(217, 130, 43, 0.3); padding-bottom: 8px;">
+                                    Descubre Especialidades Destacadas
                                 </h3>
-                                
-                                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
-                                    <tr>
-                                        <td width="85" style="vertical-align: top; padding-right: 15px;">
-                                            <img src="https://files.catbox.moe/a1se2v.jpg" alt="Box Mix Favoritos" width="85" height="85" style="width: 85px; height: 85px; object-fit: cover; border-radius: 10px; border: 1px solid #D9822B; display: block;" />
-                                        </td>
-                                        <td style="vertical-align: top; color: #FAF6F0;">
-                                            <strong style="color: #E5C384; font-size: 14px; display: block; margin-bottom: 4px;">Box Mix Selección Favoritos</strong>
-                                            <p style="font-size: 12px; color: #A6988B; margin: 0; line-height: 1.4;">
-                                                Variedad premium de bocados salados y dulce artesanales, tapestry y mini pastelería ideal para 10 a 15 invitados.
-                                            </p>
-                                        </td>
-                                    </tr>
-                                </table>
 
                                 <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
                                     <tr>
@@ -217,26 +200,12 @@ def send_resend_welcome_email(to_email, coupon_code):
                                 <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 16px;">
                                     <tr>
                                         <td width="85" style="vertical-align: top; padding-right: 15px;">
-                                            <img src="https://files.catbox.moe/xw7q1z.jpg" alt="Box Mix Parrillero" width="85" height="85" style="width: 85px; height: 85px; object-fit: cover; border-radius: 10px; border: 1px solid #D9822B; display: block;" />
+                                            <img src="https://files.catbox.moe/a1se2v.jpg" alt="Box Mix Favoritos" width="85" height="85" style="width: 85px; height: 85px; object-fit: cover; border-radius: 10px; border: 1px solid #D9822B; display: block;" />
                                         </td>
                                         <td style="vertical-align: top; color: #FAF6F0;">
-                                            <strong style="color: #E5C384; font-size: 14px; display: block; margin-bottom: 4px;">Box Mix Parrillero Familiar</strong>
+                                            <strong style="color: #E5C384; font-size: 14px; display: block; margin-bottom: 4px;">Box Mix Selección Favoritos</strong>
                                             <p style="font-size: 12px; color: #A6988B; margin: 0; line-height: 1.4;">
-                                                Corte de carnes asadas a la parrilla, choripanes artesanales y brochetas con pebre artesanal de la casa.
-                                            </p>
-                                        </td>
-                                    </tr>
-                                </table>
-
-                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                                    <tr>
-                                        <td width="85" style="vertical-align: top; padding-right: 15px;">
-                                            <img src="https://files.catbox.moe/86zuiw.jpg" alt="Gran Mix Dulce" width="85" height="85" style="width: 85px; height: 85px; object-fit: cover; border-radius: 10px; border: 1px solid #D9822B; display: block;" />
-                                        </td>
-                                        <td style="vertical-align: top; color: #FAF6F0;">
-                                            <strong style="color: #E5C384; font-size: 14px; display: block; margin-bottom: 4px;">Gran Mix Dulce & Pastelería Fina</strong>
-                                            <p style="font-size: 12px; color: #A6988B; margin: 0; line-height: 1.4;">
-                                                Surtido de bocados dulces finos, cachitos, alfajores de manjar y tartaletas frutales de alta repostería.
+                                                Variedad premium de bocados salados y dulce artesanales, tapestry y mini pastelería ideal para 10 a 15 invitados.
                                             </p>
                                         </td>
                                     </tr>
@@ -247,7 +216,7 @@ def send_resend_welcome_email(to_email, coupon_code):
                         <!-- CALL TO ACTION BUTTON -->
                         <tr>
                             <td align="center" style="padding: 0 35px 35px 35px;">
-                                <a href="http://localhost:5173/" target="_blank" style="background-color: #D9822B; color: #FFFFFF; font-weight: bold; font-size: 14px; text-decoration: none; padding: 14px 30px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 12px rgba(217, 130, 43, 0.4);">
+                                <a href="{frontend_url}/" target="_blank" style="background-color: #D9822B; color: #FFFFFF; font-weight: bold; font-size: 14px; text-decoration: none; padding: 14px 30px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 12px rgba(217, 130, 43, 0.4);">
                                     Ir a la Carta & Usar Mi Cupón ➔
                                 </a>
                             </td>
@@ -1526,9 +1495,8 @@ def admin_forgot_password(request):
     token = secrets.token_hex(16)
     user.reset_token = token
     user.reset_token_created_at = timezone.now()
-    user.save()
-
-    reset_url = f"http://localhost:5173/#admin?reset_token={token}"
+    frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:5173').rstrip('/')
+    reset_url = f"{frontend_url}/#admin?reset_token={token}"
     html_content = f"""
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #D9822B; border-radius: 16px; background-color: #120B07; color: #FAF6F0;">
         <h2 style="color: #E5C384; text-align: center; margin-top: 0;">🔒 Restablecimiento de Contraseña</h2>
