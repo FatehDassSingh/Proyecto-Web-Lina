@@ -1955,37 +1955,20 @@ def admin_client_detail_view(request, client_id):
 
 @api_view(['GET', 'POST'])
 def track_visit(request):
-    client_ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', '')).split(',')[0].strip()
     user_agent = request.META.get('HTTP_USER_AGENT', '')[:250]
     path = request.data.get('path', '/') if request.method == 'POST' else request.GET.get('path', '/')
 
     site_visit, _ = SiteVisit.objects.get_or_create(pk=1)
-    
-    # Check if this IP visited recently (in last 1 hour)
-    recent_visit = VisitLog.objects.filter(ip_address=client_ip, created_at__gte=timezone.now() - timedelta(hours=1)).first()
-    
-    if not recent_visit:
-        site_visit.total_visits += 1
-        # Check if unique visitor ever
-        ever_visited = VisitLog.objects.filter(ip_address=client_ip).exists()
-        if not ever_visited:
-            site_visit.total_uniques += 1
-        site_visit.save()
-        
-        VisitLog.objects.create(
-            ip_address=client_ip,
-            user_agent=user_agent,
-            path=path
-        )
+    site_visit.total_visits += 1
+    site_visit.save()
 
-    # Sync site_visit if legacy fake numbers exist
-    real_log_count = VisitLog.objects.count()
-    if site_visit.total_visits >= 1000 and real_log_count < 1000:
-        site_visit.total_visits = real_log_count
-        site_visit.total_uniques = VisitLog.objects.values('ip_address').distinct().count()
-        site_visit.save()
+    # Se guarda el log sin registrar la dirección IP para proteger la privacidad
+    VisitLog.objects.create(
+        ip_address='PROTECTED',
+        user_agent=user_agent,
+        path=path
+    )
 
-    # Calculate today's visits count (honest count)
     today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
     today_count = VisitLog.objects.filter(created_at__gte=today_start).count()
 
@@ -1999,21 +1982,10 @@ def track_visit(request):
 def admin_visits(request):
     site_visit, _ = SiteVisit.objects.get_or_create(pk=1)
     
-    # Sync site_visit if legacy fake numbers exist
-    real_log_count = VisitLog.objects.count()
-    if site_visit.total_visits >= 1000 and real_log_count < 1000:
-        site_visit.total_visits = real_log_count
-        site_visit.total_uniques = VisitLog.objects.values('ip_address').distinct().count()
-        site_visit.save()
-        
-    logs = VisitLog.objects.all()[:50]
-    logs_serializer = VisitLogSerializer(logs, many=True)
-    
     now = timezone.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_count = VisitLog.objects.filter(created_at__gte=today_start).count()
 
-    # Build chart data for 7 days, 12 months, and yearly
     days_es = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
     daily_7 = []
     for i in range(6, -1, -1):
@@ -2022,13 +1994,12 @@ def admin_visits(request):
         day_end = timezone.make_aware(datetime.combine(day_date, time.max))
         
         v_cnt = VisitLog.objects.filter(created_at__range=(day_start, day_end)).count()
-        u_cnt = VisitLog.objects.filter(created_at__range=(day_start, day_end)).values('ip_address').distinct().count()
         
         daily_7.append({
             'date_key': day_date.strftime('%Y-%m-%d'),
             'label': f"{days_es[day_date.weekday()]} {day_date.strftime('%d/%m')}",
             'visits': v_cnt,
-            'uniques': u_cnt
+            'uniques': v_cnt
         })
 
     months_es = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
@@ -2050,13 +2021,12 @@ def admin_visits(request):
             m_end = timezone.make_aware(datetime(y, m + 1, 1, 0, 0, 0)) - timedelta(microseconds=1)
             
         v_cnt = VisitLog.objects.filter(created_at__range=(m_start, m_end)).count()
-        u_cnt = VisitLog.objects.filter(created_at__range=(m_start, m_end)).values('ip_address').distinct().count()
         
         monthly_12.append({
             'date_key': f"{y}-{m:02d}",
             'label': f"{months_es[m-1]} {y}",
             'visits': v_cnt,
-            'uniques': u_cnt
+            'uniques': v_cnt
         })
 
     yearly = []
@@ -2065,13 +2035,12 @@ def admin_visits(request):
         y_end = timezone.make_aware(datetime(y, 12, 31, 23, 59, 59))
         
         v_cnt = VisitLog.objects.filter(created_at__range=(y_start, y_end)).count()
-        u_cnt = VisitLog.objects.filter(created_at__range=(y_start, y_end)).values('ip_address').distinct().count()
         
         yearly.append({
             'date_key': str(y),
             'label': str(y),
             'visits': v_cnt,
-            'uniques': u_cnt
+            'uniques': v_cnt
         })
 
     return Response({
@@ -2084,5 +2053,5 @@ def admin_visits(request):
             'monthly_12': monthly_12,
             'yearly': yearly
         },
-        'logs': logs_serializer.data
+        'logs': []
     })

@@ -4794,61 +4794,6 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                       );
                     })()}
                   </div>
-
-                  {/* Recent Access Logs Table */}
-                  <div className="glass-card p-5 rounded-xl border border-[#D9822B]/20 bg-[#120B07] space-y-3">
-                    <div className="flex justify-between items-center border-b border-[#D9822B]/15 pb-2">
-                      <h5 className="font-sans font-bold text-sm text-[#E5C384] flex items-center gap-2">
-                        <History className="w-4 h-4 text-[#D9822B]" />
-                        Registro Reciente de Tráfico y Navegación (Últimos Accesos)
-                      </h5>
-                      <span className="text-[11px] text-[#A6988B] font-mono">
-                        {visitData.logs?.length || 0} registros recientes
-                      </span>
-                    </div>
-
-                    <div className="overflow-x-auto rounded-xl border border-[#D9822B]/20 max-h-80 overflow-y-auto">
-                      <table className="w-full text-left text-xs">
-                        <thead className="bg-[#1A120C] text-[#E5C384] border-b border-[#D9822B]/20 sticky top-0">
-                          <tr>
-                            <th className="p-2.5 font-bold">Fecha / Hora</th>
-                            <th className="p-2.5 font-bold">Dirección IP</th>
-                            <th className="p-2.5 font-bold">Página / Ruta</th>
-                            <th className="p-2.5 font-bold">Navegador / Dispositivo</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-[#D9822B]/10">
-                          {!visitData.logs || visitData.logs.length === 0 ? (
-                            <tr>
-                              <td colSpan="4" className="p-6 text-center text-[#A6988B] italic">
-                                Sin registros de tráfico web aún.
-                              </td>
-                            </tr>
-                          ) : (
-                            visitData.logs.map((log, idx) => (
-                              <tr key={log.id || idx} className="hover:bg-[#1A120C]/60 transition-colors">
-                                <td className="p-2.5 font-mono text-[11px] text-[#FAF6F0] whitespace-nowrap">
-                                  {new Date(log.created_at).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'medium' })}
-                                </td>
-                                <td className="p-2.5 font-mono text-[11px] text-[#E5C384]">
-                                  {log.ip_address || '127.0.0.1'}
-                                </td>
-                                <td className="p-2.5 font-mono text-[11px] text-[#FAF6F0]">
-                                  <span className="bg-[#1A120C] px-2 py-0.5 rounded border border-[#D9822B]/20">
-                                    {log.path || '/'}
-                                  </span>
-                                </td>
-                                <td className="p-2.5 text-[11px] text-[#A6988B] truncate max-w-xs" title={log.user_agent}>
-                                  {log.user_agent || 'Navegador Web'}
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
                 </div>
               )}
 
