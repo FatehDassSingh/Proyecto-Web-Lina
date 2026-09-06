@@ -246,6 +246,13 @@ def send_resend_welcome_email(to_email, coupon_code):
 
 @api_view(['GET'])
 def get_menu(request):
+    if MenuItem.objects.count() == 0:
+        try:
+            from django.core.management import call_command
+            call_command('seed_data')
+        except Exception as e:
+            print(f"[AUTO SEED ERROR]: {e}")
+
     categories = Category.objects.all()
     serializer = CategoryDetailSerializer(categories, many=True)
     items = MenuItem.objects.filter(is_active=True)
@@ -257,6 +264,12 @@ def get_menu(request):
 
 @api_view(['GET'])
 def get_communes(request):
+    if Commune.objects.count() == 0:
+        try:
+            from django.core.management import call_command
+            call_command('seed_data')
+        except Exception as e:
+            print(f"[AUTO SEED ERROR]: {e}")
     communes = Commune.objects.filter(is_active=True).order_by('name')
     serializer = CommuneSerializer(communes, many=True)
     return Response(serializer.data)
