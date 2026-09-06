@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { X, ShieldCheck, Lock, RefreshCw, CheckCircle, XCircle, Clock, Edit2, Eye, History, FileText, Save, CheckCircle2, Upload, AlertTriangle, DollarSign, Plus, Trash2, Layers, Package, Search, Download, CreditCard, ShoppingBag, Mail, Sliders, Calendar, CalendarX, Unlock, Key, LogOut, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Send, Users, Phone, UserCheck, ShoppingBasket, Image as ImageIcon, Link as LinkIcon, Minus, Type, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify, UtensilsCrossed, Palette, Tag, MapPin } from 'lucide-react';
+import { X, ShieldCheck, Lock, RefreshCw, CheckCircle, XCircle, Clock, Edit2, Eye, History, FileText, Save, CheckCircle2, Upload, AlertTriangle, DollarSign, Plus, Trash2, Layers, Package, Search, Download, CreditCard, ShoppingBag, Mail, Sliders, Calendar, CalendarX, Unlock, Key, LogOut, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Send, Users, Phone, UserCheck, ShoppingBasket, Image as ImageIcon, Link as LinkIcon, Minus, Type, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify, UtensilsCrossed, Palette, Tag, MapPin, Activity } from 'lucide-react';
 import API_BASE_URL from '../config/api';
 
 const CHILE_REGIONS = [
