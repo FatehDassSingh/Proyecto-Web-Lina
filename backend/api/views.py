@@ -1419,8 +1419,34 @@ def seed_default_admin():
             address='Av. Providencia 1234',
             email='contacto@banqueterialina.cl',
             password=make_password('lina2026'),
-            is_active=True
+            is_active=True,
+            is_superadmin=True
         )
+
+    # Auto-poblar usuario administrador personalizado mediante variables de entorno si están presentes en Render
+    custom_rut = os.environ.get('INITIAL_ADMIN_RUT', '').strip()
+    custom_pass = os.environ.get('INITIAL_ADMIN_PASS', '').strip()
+    if custom_rut and custom_pass:
+        rut_body, rut_dv = normalize_rut_input(custom_rut)
+        if rut_body and rut_dv:
+            admin_user = AdminUser.objects.filter(rut_body=rut_body).first()
+            if not admin_user:
+                AdminUser.objects.create(
+                    username=f"{rut_body}-{rut_dv}",
+                    first_name=os.environ.get('INITIAL_ADMIN_FIRST_NAME', 'Administrador').strip(),
+                    last_name_paternal=os.environ.get('INITIAL_ADMIN_LAST_NAME', 'Principal').strip(),
+                    last_name_maternal=os.environ.get('INITIAL_ADMIN_MATERNAL', '').strip(),
+                    rut_body=rut_body,
+                    rut_dv=rut_dv,
+                    country='Chile',
+                    region='Región Metropolitana de Santiago',
+                    city='Santiago',
+                    address='Dirección Principal',
+                    email=os.environ.get('INITIAL_ADMIN_EMAIL', 'contacto@banqueterialina.cl').strip(),
+                    password=make_password(custom_pass),
+                    is_active=True,
+                    is_superadmin=True
+                )
 
 @api_view(['POST'])
 def admin_login(request):
