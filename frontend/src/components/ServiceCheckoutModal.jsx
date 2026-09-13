@@ -472,16 +472,53 @@ export default function ServiceCheckoutModal({
     setStep(4);
   };
 
+  const compressImageFile = (file) => {
+    return new Promise((resolve) => {
+      if (!file || !file.type || !file.type.startsWith('image/')) {
+        resolve(null);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 1000;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          resolve(compressedDataUrl);
+        };
+        img.onerror = () => resolve(e.target.result);
+        img.src = e.target.result;
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Drag and Drop File Handlers
-  const handleFileSelect = (file) => {
+  const handleFileSelect = async (file) => {
     if (!file) return;
     setVoucherImage(file);
     setErrorMessage('');
     
     if (file.type && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => setVoucherPreviewUrl(e.target.result);
-      reader.readAsDataURL(file);
+      const compressed = await compressImageFile(file);
+      setVoucherPreviewUrl(compressed);
     } else {
       setVoucherPreviewUrl(null);
     }
@@ -560,22 +597,8 @@ export default function ServiceCheckoutModal({
         setErrorMessage(data.error || 'Error al procesar la orden.');
       }
     } catch (e) {
-      // Local fallback simulation
-      const mockOrder = {
-        code: `LINA-${Math.floor(100000 + Math.random() * 900000)}`,
-        client_name: fullClientName,
-        client_rut: formattedRut,
-        client_email: clientEmail,
-        client_phone: fullPhone,
-        service_type: serviceType,
-        final_total: finalTotal,
-        event_date: eventDate,
-        time_slot: timeSlot,
-        status: 'PENDIENTE'
-      };
-      setCreatedOrder(mockOrder);
-      setStep(5);
-      onClearCart();
+      console.error('[SUBMIT ORDER ERROR]:', e);
+      setErrorMessage('No se pudo conectar con el servidor para registrar tu pedido. Por favor verifica tu conexión o intenta con un monto superior al mínimo de compra.');
     } finally {
       setIsSubmitting(false);
     }
