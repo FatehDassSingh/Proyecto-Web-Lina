@@ -794,6 +794,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
     about: false,
     blockDates: false,
     limits: false,
+    bank: false,
     contact: false,
     timeSlots: false,
     terms: false,
@@ -3112,6 +3113,15 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                     </button>
                     <button
                       type="button"
+                      onClick={() => setSettingsSubCategory('bank')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        settingsSubCategory === 'bank' ? 'bg-[#D9822B] text-white font-bold shadow' : 'text-[#A6988B] hover:text-[#FAF6F0]'
+                      }`}
+                    >
+                      💳 Datos Bancarios
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setSettingsSubCategory('contact')}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                         settingsSubCategory === 'contact' ? 'bg-[#D9822B] text-white font-bold shadow' : 'text-[#A6988B] hover:text-[#FAF6F0]'
@@ -4050,7 +4060,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                             </div>
 
                             {/* Max Daily Portions Input */}
-                            <div className="space-y-2 pb-4 border-b border-[#D9822B]/20">
+                            <div className="space-y-2">
                               <div className="flex justify-between items-center">
                                 <label className="font-bold text-sm text-[#FAF6F0] block">Límite Máximo de Porciones Diarias</label>
                                 <span className="text-xs font-mono text-[#E5C384] font-semibold">{config.max_daily_portions} Porciones</span>
@@ -4063,87 +4073,113 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                                 className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
                               />
                             </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
-                            {/* BANK DETAILS SECTION */}
-                            <div className="pt-2 space-y-4">
-                              <div className="flex items-center gap-2">
-                                <CreditCard className="w-4 h-4 text-[#E5C384]" />
-                                <h6 className="font-serif font-bold text-sm text-[#E5C384]">Datos Bancarios Oficiales para Transferencias</h6>
+                    {/* CATEGORY: BANK DETAILS ACCORDION */}
+                    {(settingsSubCategory === 'all' || settingsSubCategory === 'bank') && (
+                      <div className="bg-[#120B07] rounded-2xl border border-[#D9822B]/30 overflow-hidden transition-all shadow-md">
+                        <button
+                          type="button"
+                          onClick={() => toggleAccordion('bank')}
+                          className="w-full flex items-center justify-between p-4 bg-[#120B07] hover:bg-[#1A120C] transition-colors cursor-pointer text-left"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-xl bg-[#D9822B]/15 border border-[#D9822B]/30 text-[#E5C384]">
+                              <CreditCard className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Datos Bancarios para Transferencias</h6>
+                              <p className="text-[11px] text-[#A6988B]">Banco, tipo de cuenta, número, titular, RUT y correo para comprobantes.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-[#E5C384]">
+                              {openAccordions.bank ? 'Contraer' : 'Desplegar'}
+                            </span>
+                            {openAccordions.bank ? <ChevronUp className="w-5 h-5 text-[#E5C384]" /> : <ChevronDown className="w-5 h-5 text-[#E5C384]" />}
+                          </div>
+                        </button>
+
+                        {openAccordions.bank && (
+                          <div className="p-5 border-t border-[#D9822B]/20 space-y-4">
+                            <p className="text-xs text-[#A6988B]">
+                              Estos datos se mostrarán automáticamente en la pantalla de pago (Checkout) a tus clientes y en los correos electrónicos de confirmación.
+                            </p>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Nombre del Banco</label>
+                                <input 
+                                  type="text"
+                                  value={config.bank_name || ''}
+                                  onChange={(e) => setConfig({ ...config, bank_name: e.target.value })}
+                                  placeholder="Ej: Banco Santander / Banco de Chile"
+                                  className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs text-[#FAF6F0]"
+                                />
                               </div>
-                              <p className="text-xs text-[#A6988B]">
-                                Estos datos se mostrarán automáticamente en la pantalla de pago (Checkout) y en los correos electrónicos de confirmación.
-                              </p>
 
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                  <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Nombre del Banco</label>
-                                  <input 
-                                    type="text"
-                                    value={config.bank_name || ''}
-                                    onChange={(e) => setConfig({ ...config, bank_name: e.target.value })}
-                                    placeholder="Ej: Banco Santander / Banco de Chile"
-                                    className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs text-[#FAF6F0]"
-                                  />
-                                </div>
+                              <div>
+                                <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Tipo de Cuenta</label>
+                                <input 
+                                  type="text"
+                                  value={config.bank_account_type || ''}
+                                  onChange={(e) => setConfig({ ...config, bank_account_type: e.target.value })}
+                                  placeholder="Ej: Cuenta Corriente / Cuenta RUT"
+                                  className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs text-[#FAF6F0]"
+                                />
+                              </div>
 
-                                <div>
-                                  <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Tipo de Cuenta</label>
-                                  <input 
-                                    type="text"
-                                    value={config.bank_account_type || ''}
-                                    onChange={(e) => setConfig({ ...config, bank_account_type: e.target.value })}
-                                    placeholder="Ej: Cuenta Corriente / Cuenta RUT"
-                                    className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs text-[#FAF6F0]"
-                                  />
-                                </div>
+                              <div>
+                                <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Número de Cuenta</label>
+                                <input 
+                                  type="text"
+                                  value={config.bank_account_number || ''}
+                                  onChange={(e) => setConfig({ ...config, bank_account_number: e.target.value })}
+                                  placeholder="Ej: 78-90123-45"
+                                  className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#E5C384]"
+                                />
+                              </div>
 
-                                <div>
-                                  <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Número de Cuenta</label>
-                                  <input 
-                                    type="text"
-                                    value={config.bank_account_number || ''}
-                                    onChange={(e) => setConfig({ ...config, bank_account_number: e.target.value })}
-                                    placeholder="Ej: 78-90123-45"
-                                    className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#E5C384]"
-                                  />
-                                </div>
+                              <div>
+                                <label className="text-xs font-bold text-[#FAF6F0] block mb-1">RUT del Titular</label>
+                                <input 
+                                  type="text"
+                                  value={config.bank_holder_rut || ''}
+                                  onChange={(e) => setConfig({ ...config, bank_holder_rut: e.target.value })}
+                                  placeholder="Ej: 76.982.100-5"
+                                  className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0]"
+                                />
+                              </div>
 
-                                <div>
-                                  <label className="text-xs font-bold text-[#FAF6F0] block mb-1">RUT del Titular</label>
-                                  <input 
-                                    type="text"
-                                    value={config.bank_holder_rut || ''}
-                                    onChange={(e) => setConfig({ ...config, bank_holder_rut: e.target.value })}
-                                    placeholder="Ej: 76.982.100-5"
-                                    className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0]"
-                                  />
-                                </div>
+                              <div>
+                                <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Nombre del Titular</label>
+                                <input 
+                                  type="text"
+                                  value={config.bank_holder_name || ''}
+                                  onChange={(e) => setConfig({ ...config, bank_holder_name: e.target.value })}
+                                  placeholder="Ej: Banquetería Lina SpA"
+                                  className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-bold text-[#FAF6F0]"
+                                />
+                              </div>
 
-                                <div>
-                                  <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Nombre del Titular</label>
-                                  <input 
-                                    type="text"
-                                    value={config.bank_holder_name || ''}
-                                    onChange={(e) => setConfig({ ...config, bank_holder_name: e.target.value })}
-                                    placeholder="Ej: Banquetería Lina SpA"
-                                    className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-bold text-[#FAF6F0]"
-                                  />
-                                </div>
-
-                                <div>
-                                  <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Correo para Comprobantes</label>
-                                  <input 
-                                    type="email"
-                                    value={config.bank_email || ''}
-                                    onChange={(e) => setConfig({ ...config, bank_email: e.target.value })}
-                                    placeholder="Ej: contacto@banqueterialina.cl"
-                                    className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#D9822B]"
-                                  />
-                                </div>
+                              <div>
+                                <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Correo para Comprobantes</label>
+                                <input 
+                                  type="email"
+                                  value={config.bank_email || ''}
+                                  onChange={(e) => setConfig({ ...config, bank_email: e.target.value })}
+                                  placeholder="Ej: contacto@banqueterialina.cl"
+                                  className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#D9822B]"
+                                />
                               </div>
                             </div>
                           </div>
                         )}
+                      </div>
+                    )}
                       </div>
                     )}
 
