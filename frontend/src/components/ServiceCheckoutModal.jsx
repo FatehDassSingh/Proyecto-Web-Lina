@@ -1210,12 +1210,12 @@ export default function ServiceCheckoutModal({
               {/* Bank Transfer Details */}
               <div className="bg-[#120B07] p-4 rounded-xl border border-[#D9822B]/20 text-xs space-y-2">
                 <h5 className="font-serif font-bold text-[#E5C384] text-sm mb-2">Datos para Transferencia Bancaria Directa</h5>
-                <p><span className="text-[#A6988B]">Banco:</span> Banco de Chile</p>
-                <p><span className="text-[#A6988B]">Tipo de Cuenta:</span> Cuenta Corriente</p>
-                <p><span className="text-[#A6988B]">Número:</span> 00-12345-678</p>
-                <p><span className="text-[#A6988B]">Titular:</span> Banquetería Lina SpA / Lina Ramírez</p>
-                <p><span className="text-[#A6988B]">Rut:</span> 77.890.123-4</p>
-                <p><span className="text-[#A6988B]">Correo de Pago:</span> pagos@banqueterialina.cl</p>
+                <p><span className="text-[#A6988B]">Banco:</span> <strong>{businessConfig?.bank_name || 'Banco Santander'}</strong></p>
+                <p><span className="text-[#A6988B]">Tipo de Cuenta:</span> <strong>{businessConfig?.bank_account_type || 'Cuenta Corriente'}</strong></p>
+                <p><span className="text-[#A6988B]">Número de Cuenta:</span> <strong className="font-mono text-[#E5C384]">{businessConfig?.bank_account_number || '78-90123-45'}</strong></p>
+                <p><span className="text-[#A6988B]">Titular:</span> <strong>{businessConfig?.bank_holder_name || 'Banquetería Lina SpA'}</strong></p>
+                <p><span className="text-[#A6988B]">RUT Titular:</span> <strong>{businessConfig?.bank_holder_rut || '76.982.100-5'}</strong></p>
+                <p><span className="text-[#A6988B]">Correo de Pago / Comprobantes:</span> <strong className="text-[#D9822B]">{businessConfig?.bank_email || 'contacto@banqueterialina.cl'}</strong></p>
               </div>
 
               {/* REAL HTML5 DRAG & DROP INTERCEPTOR ZONE */}

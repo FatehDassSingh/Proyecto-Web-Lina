@@ -69,4 +69,12 @@ class Command(BaseCommand):
         BusinessConfig.objects.get_or_create(key='waiter_rate', defaults={'value': '20000', 'description': 'Tarifa por garzón por evento'})
         BusinessConfig.objects.get_or_create(key='max_daily_portions', defaults={'value': '250', 'description': 'Máximo de porciones por día'})
 
+        # Bank Account details
+        BusinessConfig.objects.get_or_create(key='bank_name', defaults={'value': 'Banco Santander', 'description': 'Nombre del Banco'})
+        BusinessConfig.objects.get_or_create(key='bank_account_type', defaults={'value': 'Cuenta Corriente', 'description': 'Tipo de Cuenta'})
+        BusinessConfig.objects.get_or_create(key='bank_account_number', defaults={'value': '78-90123-45', 'description': 'Número de Cuenta'})
+        BusinessConfig.objects.get_or_create(key='bank_holder_name', defaults={'value': 'Banquetería Lina SpA', 'description': 'Nombre Titular Cuenta'})
+        BusinessConfig.objects.get_or_create(key='bank_holder_rut', defaults={'value': '76.982.100-5', 'description': 'RUT Titular Cuenta'})
+        BusinessConfig.objects.get_or_create(key='bank_email', defaults={'value': 'contacto@banqueterialina.cl', 'description': 'Correo para Comprobantes Bancarios'})
+
         self.stdout.write(self.style.SUCCESS("¡Base de datos poblada exitosamente!"))

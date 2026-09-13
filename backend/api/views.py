@@ -605,6 +605,12 @@ def business_config_view(request):
                         'theme_color_bg': 'Color Fondo Principal',
                         'theme_color_card': 'Color Fondo Tarjetas',
                         'theme_color_text': 'Color Texto Principal',
+                        'bank_name': 'Nombre del Banco',
+                        'bank_account_type': 'Tipo de Cuenta Bancaria',
+                        'bank_account_number': 'Número de Cuenta Bancaria',
+                        'bank_holder_name': 'Nombre Titular de la Cuenta',
+                        'bank_holder_rut': 'RUT Titular de la Cuenta',
+                        'bank_email': 'Correo para Comprobantes Bancarios',
                     }
                     field_name = label_map.get(k, k)
                     changes_list.append(f"{field_name}: {old_val} ➔ {str_val}")
@@ -656,6 +662,13 @@ def build_order_confirmation_email_html(order):
     waiters_row = f"<tr><td style='color: #A6988B;'>Garzones Adicionales:</td><td align='right' style='color: #FAF6F0; font-weight: bold;'>{waiters_fee_fmt}</td></tr>" if order.waiters_fee > 0 else ""
     delivery_row = f"<tr><td style='color: #A6988B;'>Despacho a Domicilio:</td><td align='right' style='color: #FAF6F0; font-weight: bold;'>{delivery_fee_fmt}</td></tr>" if order.delivery_fee > 0 else ""
     discount_row = f"<tr><td style='color: #A6988B;'>Descuento Cupón:</td><td align='right' style='color: #4ADE80; font-weight: bold;'>{discount_fmt}</td></tr>" if order.discount_amount > 0 else ""
+
+    bank_name_val = get_config_value('bank_name', 'Banco Santander')
+    bank_type_val = get_config_value('bank_account_type', 'Cuenta Corriente')
+    bank_num_val = get_config_value('bank_account_number', '78-90123-45')
+    bank_rut_val = get_config_value('bank_holder_rut', '76.982.100-5')
+    bank_holder_val = get_config_value('bank_holder_name', 'Banquetería Lina SpA')
+    bank_email_val = get_config_value('bank_email', 'contacto@banqueterialina.cl')
 
     html = f"""
     <!DOCTYPE html>
@@ -776,27 +789,27 @@ def build_order_confirmation_email_html(order):
                                     <table width="100%" border="0" cellspacing="0" cellpadding="6" style="font-size: 12px; color: #FAF6F0; background-color: #120B07; border-radius: 8px; border: 1px solid #2A1F17;">
                                         <tr>
                                             <td style="color: #A6988B;" width="40%">Banco:</td>
-                                            <td><strong>Banco Santander</strong></td>
+                                            <td><strong>{bank_name_val}</strong></td>
                                         </tr>
                                         <tr>
                                             <td style="color: #A6988B;">Tipo de Cuenta:</td>
-                                            <td><strong>Cuenta Corriente</strong></td>
+                                            <td><strong>{bank_type_val}</strong></td>
                                         </tr>
                                         <tr>
                                             <td style="color: #A6988B;">N° de Cuenta:</td>
-                                            <td><strong style="color: #E5C384; font-family: monospace; font-size: 14px;">78-90123-45</strong></td>
+                                            <td><strong style="color: #E5C384; font-family: monospace; font-size: 14px;">{bank_num_val}</strong></td>
                                         </tr>
                                         <tr>
                                             <td style="color: #A6988B;">RUT Titular:</td>
-                                            <td><strong>76.982.100-5</strong></td>
+                                            <td><strong>{bank_rut_val}</strong></td>
                                         </tr>
                                         <tr>
                                             <td style="color: #A6988B;">Nombre Titular:</td>
-                                            <td><strong>Banquetería Lina SpA</strong></td>
+                                            <td><strong>{bank_holder_val}</strong></td>
                                         </tr>
                                         <tr>
                                             <td style="color: #A6988B;">Correo para Comprobantes:</td>
-                                            <td><strong style="color: #D9822B;">contacto@banqueterialina.cl</strong></td>
+                                            <td><strong style="color: #D9822B;">{bank_email_val}</strong></td>
                                         </tr>
                                     </table>
                                 </div>

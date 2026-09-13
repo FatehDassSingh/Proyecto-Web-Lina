@@ -727,6 +727,12 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
     waiter_fee: 20000,
     min_order_total: 70000,
     max_daily_portions: 250,
+    bank_name: 'Banco Santander',
+    bank_account_type: 'Cuenta Corriente',
+    bank_account_number: '78-90123-45',
+    bank_holder_name: 'Banquetería Lina SpA',
+    bank_holder_rut: '76.982.100-5',
+    bank_email: 'contacto@banqueterialina.cl',
     contact_phone: '+56 9 3465 6961',
     contact_email: 'contacto@banqueterialina.cl',
     business_hours: 'Lunes a Domingo de 09:00 a 19:00 hrs',
@@ -1458,6 +1464,12 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
             waiter_fee: Number(cfgObj.waiter_fee) || 20000,
             min_order_total: Number(cfgObj.min_order_total) || 70000,
             max_daily_portions: Number(cfgObj.max_daily_portions) || 250,
+            bank_name: cfgObj.bank_name || 'Banco Santander',
+            bank_account_type: cfgObj.bank_account_type || 'Cuenta Corriente',
+            bank_account_number: cfgObj.bank_account_number || '78-90123-45',
+            bank_holder_name: cfgObj.bank_holder_name || 'Banquetería Lina SpA',
+            bank_holder_rut: cfgObj.bank_holder_rut || '76.982.100-5',
+            bank_email: cfgObj.bank_email || 'contacto@banqueterialina.cl',
             contact_phone: cfgObj.contact_phone || '+56 9 3465 6961',
             contact_email: cfgObj.contact_email || 'contacto@banqueterialina.cl',
             business_hours: cfgObj.business_hours || 'Lunes a Domingo de 09:00 a 19:00 hrs',
@@ -4038,7 +4050,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                             </div>
 
                             {/* Max Daily Portions Input */}
-                            <div className="space-y-2">
+                            <div className="space-y-2 pb-4 border-b border-[#D9822B]/20">
                               <div className="flex justify-between items-center">
                                 <label className="font-bold text-sm text-[#FAF6F0] block">Límite Máximo de Porciones Diarias</label>
                                 <span className="text-xs font-mono text-[#E5C384] font-semibold">{config.max_daily_portions} Porciones</span>
@@ -4050,6 +4062,85 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                                 onChange={(e) => setConfig({ ...config, max_daily_portions: Number(e.target.value) })}
                                 className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0] focus:outline-none focus:border-[#D9822B]"
                               />
+                            </div>
+
+                            {/* BANK DETAILS SECTION */}
+                            <div className="pt-2 space-y-4">
+                              <div className="flex items-center gap-2">
+                                <CreditCard className="w-4 h-4 text-[#E5C384]" />
+                                <h6 className="font-serif font-bold text-sm text-[#E5C384]">Datos Bancarios Oficiales para Transferencias</h6>
+                              </div>
+                              <p className="text-xs text-[#A6988B]">
+                                Estos datos se mostrarán automáticamente en la pantalla de pago (Checkout) y en los correos electrónicos de confirmación.
+                              </p>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                  <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Nombre del Banco</label>
+                                  <input 
+                                    type="text"
+                                    value={config.bank_name || ''}
+                                    onChange={(e) => setConfig({ ...config, bank_name: e.target.value })}
+                                    placeholder="Ej: Banco Santander / Banco de Chile"
+                                    className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs text-[#FAF6F0]"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Tipo de Cuenta</label>
+                                  <input 
+                                    type="text"
+                                    value={config.bank_account_type || ''}
+                                    onChange={(e) => setConfig({ ...config, bank_account_type: e.target.value })}
+                                    placeholder="Ej: Cuenta Corriente / Cuenta RUT"
+                                    className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs text-[#FAF6F0]"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Número de Cuenta</label>
+                                  <input 
+                                    type="text"
+                                    value={config.bank_account_number || ''}
+                                    onChange={(e) => setConfig({ ...config, bank_account_number: e.target.value })}
+                                    placeholder="Ej: 78-90123-45"
+                                    className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#E5C384]"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="text-xs font-bold text-[#FAF6F0] block mb-1">RUT del Titular</label>
+                                  <input 
+                                    type="text"
+                                    value={config.bank_holder_rut || ''}
+                                    onChange={(e) => setConfig({ ...config, bank_holder_rut: e.target.value })}
+                                    placeholder="Ej: 76.982.100-5"
+                                    className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#FAF6F0]"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Nombre del Titular</label>
+                                  <input 
+                                    type="text"
+                                    value={config.bank_holder_name || ''}
+                                    onChange={(e) => setConfig({ ...config, bank_holder_name: e.target.value })}
+                                    placeholder="Ej: Banquetería Lina SpA"
+                                    className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-bold text-[#FAF6F0]"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="text-xs font-bold text-[#FAF6F0] block mb-1">Correo para Comprobantes</label>
+                                  <input 
+                                    type="email"
+                                    value={config.bank_email || ''}
+                                    onChange={(e) => setConfig({ ...config, bank_email: e.target.value })}
+                                    placeholder="Ej: contacto@banqueterialina.cl"
+                                    className="w-full px-3.5 py-2.5 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs font-mono text-[#D9822B]"
+                                  />
+                                </div>
+                              </div>
                             </div>
                           </div>
                         )}
