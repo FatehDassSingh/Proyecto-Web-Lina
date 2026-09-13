@@ -809,6 +809,16 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
     }));
   };
 
+  const handleSettingsSubCategoryChange = (subCat) => {
+    setSettingsSubCategory(subCat);
+    if (subCat !== 'all') {
+      setOpenAccordions(prev => ({
+        ...prev,
+        [subCat]: true
+      }));
+    }
+  };
+
   // Live real-time updates of site theme variables and favicon when editing in Admin
   useEffect(() => {
     if (config) {
@@ -2191,7 +2201,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                       {activeTab === 'settings' && isSettingsMenuOpen && (
                         <div className="pl-3 pr-1 py-1 space-y-1 border-l-2 border-[#D9822B]/40 ml-4 text-xs">
                           <button
-                            onClick={() => setSettingsSubCategory('appearance')}
+                            onClick={() => handleSettingsSubCategoryChange('appearance')}
                             className={`w-full text-left px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-2 cursor-pointer ${
                               settingsSubCategory === 'appearance' ? 'bg-[#D9822B]/20 text-[#E5C384] font-bold border border-[#D9822B]/40' : 'text-[#A6988B] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
                             }`}
@@ -2200,7 +2210,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                           </button>
 
                           <button
-                            onClick={() => setSettingsSubCategory('all')}
+                            onClick={() => handleSettingsSubCategoryChange('all')}
                             className={`w-full text-left px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-2 cursor-pointer ${
                               settingsSubCategory === 'all' ? 'bg-[#D9822B]/20 text-[#E5C384] font-bold border border-[#D9822B]/40' : 'text-[#A6988B] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
                             }`}
@@ -2209,7 +2219,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                           </button>
 
                           <button
-                            onClick={() => setSettingsSubCategory('terms')}
+                            onClick={() => handleSettingsSubCategoryChange('terms')}
                             className={`w-full text-left px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-2 cursor-pointer ${
                               settingsSubCategory === 'terms' ? 'bg-[#D9822B]/20 text-[#E5C384] font-bold border border-[#D9822B]/40' : 'text-[#A6988B] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
                             }`}
@@ -2218,7 +2228,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                           </button>
 
                           <button
-                            onClick={() => setSettingsSubCategory('time_slots')}
+                            onClick={() => handleSettingsSubCategoryChange('time_slots')}
                             className={`w-full text-left px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-2 cursor-pointer ${
                               settingsSubCategory === 'time_slots' ? 'bg-[#D9822B]/20 text-[#E5C384] font-bold border border-[#D9822B]/40' : 'text-[#A6988B] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
                             }`}
@@ -2227,7 +2237,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                           </button>
 
                           <button
-                            onClick={() => setSettingsSubCategory('limits')}
+                            onClick={() => handleSettingsSubCategoryChange('limits')}
                             className={`w-full text-left px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-2 cursor-pointer ${
                               settingsSubCategory === 'limits' ? 'bg-[#D9822B]/20 text-[#E5C384] font-bold border border-[#D9822B]/40' : 'text-[#A6988B] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
                             }`}
@@ -2236,7 +2246,16 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                           </button>
 
                           <button
-                            onClick={() => setSettingsSubCategory('contact')}
+                            onClick={() => handleSettingsSubCategoryChange('bank')}
+                            className={`w-full text-left px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-2 cursor-pointer ${
+                              settingsSubCategory === 'bank' ? 'bg-[#D9822B]/20 text-[#E5C384] font-bold border border-[#D9822B]/40' : 'text-[#A6988B] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
+                            }`}
+                          >
+                            <span>💳 Datos Bancarios</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleSettingsSubCategoryChange('contact')}
                             className={`w-full text-left px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-2 cursor-pointer ${
                               settingsSubCategory === 'contact' ? 'bg-[#D9822B]/20 text-[#E5C384] font-bold border border-[#D9822B]/40' : 'text-[#A6988B] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
                             }`}
@@ -2245,7 +2264,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                           </button>
 
                           <button
-                            onClick={() => setSettingsSubCategory('audit')}
+                            onClick={() => handleSettingsSubCategoryChange('audit')}
                             className={`w-full text-left px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-2 cursor-pointer ${
                               settingsSubCategory === 'audit' ? 'bg-[#D9822B]/20 text-[#E5C384] font-bold border border-[#D9822B]/40' : 'text-[#A6988B] hover:text-[#FAF6F0] hover:bg-[#1A120C]'
                             }`}
@@ -3064,81 +3083,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                     </p>
                   </div>
 
-                  {/* Subcategory Pill Filter Bar */}
-                  <div className="flex items-center gap-1.5 flex-wrap bg-[#120B07] p-1.5 rounded-xl border border-[#D9822B]/20">
-                    <button
-                      type="button"
-                      onClick={() => setSettingsSubCategory('appearance')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                        settingsSubCategory === 'appearance' ? 'bg-[#D9822B] text-white font-bold shadow' : 'text-[#A6988B] hover:text-[#FAF6F0]'
-                      }`}
-                    >
-                      🎨 Apariencia
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSettingsSubCategory('all')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                        settingsSubCategory === 'all' ? 'bg-[#D9822B] text-white font-bold shadow' : 'text-[#A6988B] hover:text-[#FAF6F0]'
-                      }`}
-                    >
-                      ⚙️ Todas las Reglas
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSettingsSubCategory('terms')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                        settingsSubCategory === 'terms' ? 'bg-[#D9822B] text-white font-bold shadow' : 'text-[#A6988B] hover:text-[#FAF6F0]'
-                      }`}
-                    >
-                      📝 Términos y Condiciones
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSettingsSubCategory('time_slots')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                        settingsSubCategory === 'time_slots' ? 'bg-[#D9822B] text-white font-bold shadow' : 'text-[#A6988B] hover:text-[#FAF6F0]'
-                      }`}
-                    >
-                      🕥 Bloques Horarios
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSettingsSubCategory('limits')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                        settingsSubCategory === 'limits' ? 'bg-[#D9822B] text-white font-bold shadow' : 'text-[#A6988B] hover:text-[#FAF6F0]'
-                      }`}
-                    >
-                      💰 Límites y Tarifas
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSettingsSubCategory('bank')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                        settingsSubCategory === 'bank' ? 'bg-[#D9822B] text-white font-bold shadow' : 'text-[#A6988B] hover:text-[#FAF6F0]'
-                      }`}
-                    >
-                      💳 Datos Bancarios
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSettingsSubCategory('contact')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                        settingsSubCategory === 'contact' ? 'bg-[#D9822B] text-white font-bold shadow' : 'text-[#A6988B] hover:text-[#FAF6F0]'
-                      }`}
-                    >
-                      📞 Contacto y Horarios
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSettingsSubCategory('audit')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                        settingsSubCategory === 'audit' ? 'bg-[#D9822B] text-white font-bold shadow' : 'text-[#A6988B] hover:text-[#FAF6F0]'
-                      }`}
-                    >
-                      📜 Historial Auditoría
-                    </button>
-                  </div>
+
                   
                   {configSuccessMsg && (
                     <div className="bg-green-500/15 border border-green-500/40 p-3.5 rounded-xl text-green-400 text-xs font-semibold flex items-center gap-2">
