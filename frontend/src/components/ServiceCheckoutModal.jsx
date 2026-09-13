@@ -664,7 +664,7 @@ export default function ServiceCheckoutModal({
                         <span className="w-6 h-6 rounded-full bg-[#D9822B]/20 text-[#E5C384] font-bold text-xs flex items-center justify-center shrink-0 border border-[#D9822B]/40">2</span>
                         <div>
                           <strong className="text-[#FAF6F0] block font-semibold mb-0.5">Modalidad & Agenda</strong>
-                          <span className="text-[#A6988B] text-[11px] leading-tight block">Selecciona Retiro en Taller o Banquetería en Terreno (Sábados).</span>
+                          <span className="text-[#A6988B] text-[11px] leading-tight block">Selecciona Retiro en Taller o Banquetería en Terreno los Sábados.</span>
                         </div>
                       </div>
 
@@ -835,7 +835,7 @@ export default function ServiceCheckoutModal({
                   }`}
                 >
                   <h5 className="font-serif font-bold text-sm text-[#E5C384] mb-1">Retiro en Local</h5>
-                  <p className="text-[11px] leading-tight">En taller casa (Santiago). Lun a Dom en bloque horario.</p>
+                  <p className="text-[11px] leading-tight">En taller casa Santiago. Lun a Dom en bloque horario.</p>
                 </button>
 
                 <button
@@ -861,7 +861,7 @@ export default function ServiceCheckoutModal({
                   }`}
                 >
                   <h5 className="font-serif font-bold text-sm text-[#E5C384] mb-1">Con Garzones</h5>
-                  <p className="text-[11px] leading-tight">Montaje + Personal por 4 hrs (1 garzón c/25 personas). Solo Sábados.</p>
+                  <p className="text-[11px] leading-tight">Montaje y personal por 4 hrs. 1 garzón cada 25 personas. Solo Sábados.</p>
                 </button>
               </div>
 
@@ -883,7 +883,7 @@ export default function ServiceCheckoutModal({
                     className="w-full accent-[#D9822B]"
                   />
                   <div className="flex justify-between text-xs text-[#A6988B] pt-1">
-                    <span>Garzones calculados (1:25): <strong className="text-[#E5C384]">{waitersCount} Garzón(es)</strong></span>
+                    <span>Garzones calculados: <strong className="text-[#E5C384]">{waitersCount} Garzón/es</strong></span>
                     <span>Costo total garzones: <strong className="text-[#E5C384]">${waitersFee.toLocaleString('es-CL')} CLP</strong></span>
                   </div>
                 </div>
@@ -1077,7 +1077,7 @@ export default function ServiceCheckoutModal({
               {/* Phone with +56 9 Prefix FIXED Inline Flex Layout */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-[#A6988B] block mb-1 font-semibold">Teléfono Móvil (Chile) *</label>
+                  <label className="text-xs text-[#A6988B] block mb-1 font-semibold">Teléfono Móvil *</label>
                   <div className="flex items-center h-10">
                     <div className="h-full px-3.5 bg-[#1A120C] border border-r-0 border-[#D9822B]/40 rounded-l-lg text-xs font-bold text-[#E5C384] flex items-center justify-center whitespace-nowrap shrink-0">
                       +56 9
@@ -1108,7 +1108,7 @@ export default function ServiceCheckoutModal({
               {serviceType !== 'RETIRO' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <div>
-                    <label className="text-xs text-[#A6988B] block mb-1 font-semibold">Comuna (Santiago) *</label>
+                    <label className="text-xs text-[#A6988B] block mb-1 font-semibold">Comuna *</label>
                     <select
                       value={selectedCommune}
                       onChange={(e) => setSelectedCommune(e.target.value)}
@@ -1157,7 +1157,7 @@ export default function ServiceCheckoutModal({
             <div className="space-y-5">
               <div className="flex justify-between items-center bg-[#D9822B]/15 border border-[#D9822B]/30 p-3 rounded-lg">
                 <div className="flex items-center gap-2 text-xs text-[#E5C384] font-semibold">
-                  <Clock className="w-4 h-4" /> Reserva Temporal de Cupo (15 min)
+                  <Clock className="w-4 h-4" /> Reserva Temporal de Cupo - 15 min
                 </div>
                 <span className="font-mono text-sm font-bold text-[#E5C384] bg-[#120B07] px-2 py-0.5 rounded border border-[#E5C384]/40">
                   {formatTimer(timeLeft)}
@@ -1171,7 +1171,7 @@ export default function ServiceCheckoutModal({
                 </h5>
                 <div className="space-y-1 text-[#FAF6F0]">
                   <p><span className="text-[#A6988B]">Modalidad:</span> <strong className="text-[#E5C384]">{serviceType === 'RETIRO' ? 'Retiro en Local' : serviceType === 'MONTAJE_SOLO' ? 'Montaje Decorativo en Terreno' : 'Servicio Completo con Garzones'}</strong></p>
-                  <p><span className="text-[#A6988B]">Fecha y Bloque:</span> <strong>{eventDate || 'Por definir'} ({timeSlot} hrs)</strong></p>
+                  <p><span className="text-[#A6988B]">Fecha y Bloque:</span> <strong>{eventDate || 'Por definir'} - {timeSlot} hrs</strong></p>
                   {serviceType !== 'RETIRO' && (
                     <p><span className="text-[#A6988B]">Lugar de Entrega / Montaje:</span> <strong>{address}, {selectedCommune}</strong></p>
                   )}
@@ -1179,24 +1179,24 @@ export default function ServiceCheckoutModal({
 
                 <div className="pt-2 border-t border-[#D9822B]/20 space-y-1 font-mono text-xs">
                   <div className="flex justify-between text-[#A6988B]">
-                    <span>Productos en Carrito (Subtotal):</span>
+                    <span>Subtotal Productos en Carrito:</span>
                     <span>${safeItemsTotal.toLocaleString('es-CL')} CLP</span>
                   </div>
                   {serviceType !== 'RETIRO' && (
                     <div className="flex justify-between text-[#A6988B]">
-                      <span>Traslado & Logística en Terreno ({selectedCommune}):</span>
+                      <span>Traslado & Logística en Terreno - {selectedCommune}:</span>
                       <span>+${safeDeliveryFee.toLocaleString('es-CL')} CLP</span>
                     </div>
                   )}
                   {waitersCount > 0 && (
                     <div className="flex justify-between text-[#A6988B]">
-                      <span>Servicio de Garzones ({waitersCount} garzón/es x 4 hrs):</span>
+                      <span>Servicio de Garzones - {waitersCount} garzones x 4 hrs:</span>
                       <span>+${safeWaitersFee.toLocaleString('es-CL')} CLP</span>
                     </div>
                   )}
                   {safeDiscount > 0 && (
                     <div className="flex justify-between text-green-400 font-bold">
-                      <span>Descuento Cupón Bienvenida (5%):</span>
+                      <span>Descuento Cupón Bienvenida 5%:</span>
                       <span>-${safeDiscount.toLocaleString('es-CL')} CLP</span>
                     </div>
                   )}
@@ -1325,7 +1325,7 @@ export default function ServiceCheckoutModal({
                 <p><strong className="text-[#A6988B]">RUT:</strong> <span className="text-[#E5C384] font-mono font-bold">{createdOrder.client_rut || getFormattedRut()}</span></p>
                 <p><strong className="text-[#A6988B]">Teléfono de Contacto:</strong> <span className="text-[#E5C384] font-mono font-bold">{createdOrder.client_phone}</span></p>
                 <p><strong className="text-[#A6988B]">Correo Electrónico:</strong> <span className="text-[#E5C384] font-mono">{createdOrder.client_email}</span></p>
-                <p><strong className="text-[#A6988B]">Fecha del Evento:</strong> <span className="text-[#FAF6F0] font-semibold">{createdOrder.event_date} ({createdOrder.time_slot || timeSlot})</span></p>
+                <p><strong className="text-[#A6988B]">Fecha del Evento:</strong> <span className="text-[#FAF6F0] font-semibold">{createdOrder.event_date} - {createdOrder.time_slot || timeSlot}</span></p>
                 <p><strong className="text-[#A6988B]">Modalidad:</strong> <span className="text-[#FAF6F0] font-semibold">{createdOrder.service_type}</span></p>
                 <div className="pt-2 border-t border-[#D9822B]/20 flex justify-between items-center">
                   <span className="text-[#A6988B]">Monto Total:</span>

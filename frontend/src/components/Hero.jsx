@@ -142,7 +142,7 @@ export default function Hero({
                   {heroCard3Title || "Opción Garzones"}
                 </h4>
                 <p className="text-[11px] text-[#A6988B] mt-0.5">
-                  {heroCard3Desc || "Cálculo automático de personal (1 cada 25 personas)."}
+                  {heroCard3Desc || "Cálculo automático de personal: 1 cada 25 personas."}
                 </p>
               </div>
             </div>

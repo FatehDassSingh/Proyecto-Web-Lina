@@ -22,7 +22,7 @@ const DEFAULT_TERMS_HTML = `
     <p>El único medio de pago habilitado en la fase actual es Transferencia Bancaria Directa. El cliente debe adjuntar la imagen o comprobante de la transferencia en la plataforma. La reserva queda confirmada una vez que la administradora valida y aprueba el comprobante.</p>
   </section>
   <section class="space-y-2">
-    <h3 class="font-serif text-lg font-bold text-[#E5C384]">5. Protección de Datos (Ley N° 19.628)</h3>
+    <h3 class="font-serif text-lg font-bold text-[#E5C384]">5. Protección de Datos - Ley N° 19.628</h3>
     <p>Banquetería Lina garantiza la confidencialidad absoluta de los datos de contacto y correos capturados. Estos serán utilizados únicamente para el procesamiento de pedidos y el envío de beneficios exclusivos.</p>
   </section>
 `;

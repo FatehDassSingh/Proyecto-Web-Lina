@@ -98,12 +98,12 @@ export default function MarketingModal({ isOpen, onClose }) {
 
               {/* Specs & Description */}
               <div className="space-y-4 max-w-md">
-                <h4 className="font-serif text-xl font-bold text-[#E5C384]">Pieza Publicitaria Instagram Stories (9:16)</h4>
+                <h4 className="font-serif text-xl font-bold text-[#E5C384]">Pieza Publicitaria Instagram Stories 9:16</h4>
                 <p className="text-xs text-[#A6988B] leading-relaxed">
                   Diseño de alto impacto visual con la fotografía editorial maestrizada del plato estrella y la llamada a la acción en 3 líneas directas.
                 </p>
                 <div className="bg-[#120B07] p-4 rounded-xl border border-[#D9822B]/20 text-xs space-y-2">
-                  <p><span className="text-[#E5C384]">Formato:</span> 1080 x 1920 px (9:16 Vertical)</p>
+                  <p><span className="text-[#E5C384]">Formato:</span> 1080 x 1920 px Vertical</p>
                   <p><span className="text-[#E5C384]">Copy:</span> "Disfruta con nosotros + Escanea y obtén un 5% de descuento hoy"</p>
                   <p><span className="text-[#E5C384]">Uso:</span> Publicidad pagada en Instagram Ads o Historias orgánicas.</p>
                 </div>
@@ -154,7 +154,7 @@ export default function MarketingModal({ isOpen, onClose }) {
               </div>
 
               <div className="space-y-4 max-w-md">
-                <h4 className="font-serif text-xl font-bold text-[#E5C384]">Anuncio Animado de 6 Segundos (CSS/JS Reel)</h4>
+                <h4 className="font-serif text-xl font-bold text-[#E5C384]">Anuncio Animado de 6 Segundos - CSS/JS Reel</h4>
                 <p className="text-xs text-[#A6988B] leading-relaxed">
                   Haz clic en reproducir para previsualizar el efecto de cámara lenta (zoom dinámico) y la entrada suave del mensaje de 5% de descuento.
                 </p>
@@ -163,7 +163,7 @@ export default function MarketingModal({ isOpen, onClose }) {
                   className="btn-primary text-xs py-2.5 px-6 flex items-center gap-2"
                 >
                   {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                  {isPlaying ? 'Pausar Simulación' : 'Reproducir Anuncio (6 Seg)'}
+                  {isPlaying ? 'Pausar Simulación' : 'Reproducir Anuncio - 6 Seg'}
                 </button>
               </div>
             </div>
@@ -205,7 +205,7 @@ export default function MarketingModal({ isOpen, onClose }) {
             <div className="space-y-4 max-w-xl mx-auto">
               <div className="flex items-center gap-2 text-yellow-400">
                 <Star className="w-5 h-5 fill-yellow-400" />
-                <h4 className="font-serif text-lg font-bold text-[#FAF6F0]">Módulo de Reseñas Google (Inactivo por Defecto)</h4>
+                <h4 className="font-serif text-lg font-bold text-[#FAF6F0]">Módulo de Reseñas Google</h4>
               </div>
               <p className="text-xs text-[#A6988B] leading-relaxed">
                 Este módulo incluye la variante del QR post-visita para invitar a los clientes satisfechos a dejar una opinión en Google My Business tras su banquete.
@@ -214,7 +214,7 @@ export default function MarketingModal({ isOpen, onClose }) {
               <div className="bg-[#120B07] p-5 rounded-xl border border-[#D9822B]/20 text-xs space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-[#E5C384]">Estado del Módulo:</span>
-                  <span className="bg-gray-500/20 text-gray-400 px-3 py-1 rounded font-bold uppercase text-[10px]">Apagado por Defecto (Fase 2)</span>
+                  <span className="bg-gray-500/20 text-gray-400 px-3 py-1 rounded font-bold uppercase text-[10px]">Apagado por Defecto - Fase 2</span>
                 </div>
                 <p className="text-[#A6988B]">Se activará automáticamente al enrolar la estrategia de 30 días de reputación online en Google Maps.</p>
               </div>

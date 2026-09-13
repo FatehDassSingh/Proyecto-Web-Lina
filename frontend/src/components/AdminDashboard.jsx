@@ -308,7 +308,7 @@ const RichTextEditor = ({ value, onChange }) => {
             <h4 className="font-sans text-base font-bold text-[#E5C384]">Insertar Imagen en Términos y Condiciones</h4>
             <div className="space-y-3 text-xs">
               <div>
-                <label className="text-[#FAF6F0] font-semibold block mb-1">URL de la Imagen (HTTPS) *</label>
+                <label className="text-[#FAF6F0] font-semibold block mb-1">URL de la Imagen *</label>
                 <input 
                   type="text"
                   placeholder="https://files.catbox.moe/...jpg o URL directa"
@@ -318,7 +318,7 @@ const RichTextEditor = ({ value, onChange }) => {
                 />
               </div>
               <div>
-                <label className="text-[#FAF6F0] font-semibold block mb-1">Descripción / Alt (Opcional)</label>
+                <label className="text-[#FAF6F0] font-semibold block mb-1">Descripción / Alt</label>
                 <input 
                   type="text"
                   placeholder="Ej: Logo o Diagrama de Banquetería"
@@ -2424,7 +2424,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                               </td>
                               <td className="p-3">
                                 <div className="font-semibold">{order.service_type}</div>
-                                <div className="text-[10px] text-[#A6988B]">{order.event_date} ({order.time_slot})</div>
+                                <div className="text-[10px] text-[#A6988B]">{order.event_date} - {order.time_slot}</div>
                               </td>
                               <td className="p-3 font-bold text-[#E5C384]">${order.final_total.toLocaleString('es-CL')} CLP</td>
                               <td className="p-3 space-y-1">
@@ -2691,7 +2691,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                             <tr>
                               <th className="p-3">ID</th>
                               <th className="p-3">Nombre de la Línea</th>
-                              <th className="p-3">Slug (URL)</th>
+                              <th className="p-3">Slug URL</th>
                               <th className="p-3">Descripción</th>
                               <th className="p-3">Productos</th>
                               <th className="p-3 text-right">Acciones</th>
@@ -2818,11 +2818,11 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         onChange={e => setClientFilterType(e.target.value)}
                         className="bg-[#1A120C] border border-[#D9822B]/30 rounded-lg px-3 py-2 text-xs text-[#E5C384] outline-none cursor-pointer hover:border-[#D9822B]"
                       >
-                        <option value="ALL">Todos los Clientes ({clients.length})</option>
-                        <option value="FREQUENT">Clientes Frecuentes (&gt;1 Pedido Activo)</option>
+                        <option value="ALL">Todos los Clientes</option>
+                        <option value="FREQUENT">Clientes Frecuentes</option>
                         <option value="WITH_ORDERS">Con Pedidos Activos</option>
                         <option value="WITH_REFUNDS">Con Devoluciones / Reembolsos</option>
-                        <option value="LEADS_ONLY">Clientes Prospecto (Boletín)</option>
+                        <option value="LEADS_ONLY">Clientes Prospecto</option>
                       </select>
 
                       <button
@@ -2830,7 +2830,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         className="btn-primary text-xs py-2 px-3 flex items-center gap-1 shrink-0 font-bold"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>+ Registrar Cliente 3NF</span>
+                        <span>+ Registrar Cliente</span>
                       </button>
                     </div>
                   </div>
@@ -2840,9 +2840,9 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                     <table className="w-full text-left text-xs">
                       <thead className="bg-[#1A120C] text-[#E5C384] font-sans uppercase tracking-wider border-b border-[#D9822B]/20 text-[10px]">
                         <tr>
-                          <th className="p-3.5">Cliente (Nombres & Apellidos 3NF)</th>
-                          <th className="p-3.5">RUT Atomizado (1NF)</th>
-                          <th className="p-3.5">Ubicación (FK Comuna / Dirección)</th>
+                          <th className="p-3.5">Cliente</th>
+                          <th className="p-3.5">RUT</th>
+                          <th className="p-3.5">Ubicación</th>
                           <th className="p-3.5">Contacto</th>
                           <th className="p-3.5">Historial & Inversión Neta</th>
                           <th className="p-3.5 text-right">Acciones</th>
@@ -2970,7 +2970,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
               {/* LEADS TAB */}
               {activeTab === 'leads' && (
                 <div className="space-y-4">
-                  <h4 className="font-sans text-lg font-bold text-[#E5C384]">Cupones Canjeados y Correos Capturados (5% Descuento)</h4>
+                  <h4 className="font-sans text-lg font-bold text-[#E5C384]">Cupones Canjeados y Correos Capturados - 5% Descuento</h4>
                   <div className="overflow-x-auto border border-[#D9822B]/20 rounded-xl bg-[#120B07]">
                     <table className="w-full text-left text-xs">
                       <thead className="bg-[#1A120C] text-[#E5C384] font-sans uppercase tracking-wider border-b border-[#D9822B]/20">
@@ -3209,10 +3209,10 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
 
                               {/* Preset Color Themes */}
                               <div className="space-y-2">
-                                <label className="text-xs font-semibold text-[#A6988B] block">Temas de Colores Predefinidos (Selecciona para aplicar):</label>
+                                <label className="text-xs font-semibold text-[#A6988B] block">Temas de Colores Predefinidos:</label>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                                   {[
-                                    { name: '🟡 Dorado & Ámbar (Original)', primary: '#D9822B', secondary: '#E5C384', bg: '#120B07', card: '#1A120C', text: '#FAF6F0' },
+                                    { name: '🟡 Dorado & Ámbar Original', primary: '#D9822B', secondary: '#E5C384', bg: '#120B07', card: '#1A120C', text: '#FAF6F0' },
                                     { name: '🍷 Vino & Borgoña Elegante', primary: '#C0392B', secondary: '#E6B0AA', bg: '#150A0A', card: '#221010', text: '#FDFEFE' },
                                     { name: '🌿 Verde Esmeralda Gourmet', primary: '#16A085', secondary: '#A3E4D7', bg: '#0A1512', card: '#10221E', text: '#F4F6F7' },
                                     { name: '🔷 Azul Noche Real', primary: '#2980B9', secondary: '#AED6F1', bg: '#0B131C', card: '#121E2C', text: '#F4F6F7' },
@@ -3432,7 +3432,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                                       <p className="text-xs font-semibold text-[#FAF6F0]">
                                         Haz clic para subir un nuevo Logo o arrastra un archivo aquí
                                       </p>
-                                      <p className="text-[11px] text-[#A6988B] mt-0.5">Soporta PNG, JPG, SVG o WEBP (Recomendado fondo transparente)</p>
+                                      <p className="text-[11px] text-[#A6988B] mt-0.5">Soporta PNG, JPG, SVG o WEBP. Recomendado fondo transparente.</p>
                                     </div>
                                   </div>
                                 </div>
@@ -3501,7 +3501,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                                       <p className="text-xs font-semibold text-[#FAF6F0]">
                                         Haz clic para subir un nuevo Favicon o arrastra una imagen aquí
                                       </p>
-                                      <p className="text-[11px] text-[#A6988B] mt-0.5">Soporta PNG, ICO, SVG o WEBP (Recomendado formato cuadrado)</p>
+                                      <p className="text-[11px] text-[#A6988B] mt-0.5">Soporta PNG, ICO, SVG o WEBP. Recomendado formato cuadrado.</p>
                                     </div>
                                   </div>
                                 </div>
@@ -3522,7 +3522,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                                 <Type className="w-5 h-5" />
                               </div>
                               <div>
-                                <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Textos y Secciones de la Portada (Hero)</h6>
+                                <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Textos y Secciones de la Portada - Hero</h6>
                                 <p className="text-[11px] text-[#A6988B]">Edita el título principal, subtítulo, insignia superior y las 3 tarjetas informativas.</p>
                               </div>
                             </div>
@@ -3552,7 +3552,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                                     hero_card2_title: 'Retiro o Montaje Sábados',
                                     hero_card2_desc: 'Retiro presencial Lun-Dom; montajes los Sábados.',
                                     hero_card3_title: 'Opción Garzones',
-                                    hero_card3_desc: 'Cálculo automático de personal (1 cada 25 personas).'
+                                    hero_card3_desc: 'Cálculo automático de personal: 1 cada 25 personas.'
                                   }))}
                                   className="text-xs text-[#E5C384] hover:underline transition-all flex items-center gap-1 cursor-pointer"
                                 >
@@ -3564,7 +3564,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                               <div className="space-y-3">
                                 <div>
                                   <label className="text-xs font-bold text-[#FAF6F0] block mb-1">
-                                    Título Principal del Hero (Encabezado)
+                                    Título Principal del Hero - Encabezado
                                   </label>
                                   <input 
                                     type="text"
@@ -3594,7 +3594,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                               {/* A. Insignia Superior (Badge Header) */}
                               <div className="bg-[#1A120C] p-4 rounded-xl border border-[#D9822B]/20 space-y-3">
                                 <div className="flex items-center justify-between">
-                                  <h6 className="text-xs font-bold text-[#E5C384]">Insignia Superior (Badge Encabezado)</h6>
+                                  <h6 className="text-xs font-bold text-[#E5C384]">Insignia Superior - Encabezado</h6>
                                   <label className="flex items-center gap-2 cursor-pointer">
                                     <input 
                                       type="checkbox"
@@ -3646,7 +3646,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     {/* Card 1 */}
                                     <div className="bg-[#120B07] p-3 rounded-lg border border-[#D9822B]/30 space-y-2">
-                                      <span className="text-[11px] font-bold text-[#E5C384] uppercase block">Tarjeta 1 (Anticipación)</span>
+                                      <span className="text-[11px] font-bold text-[#E5C384] uppercase block">Tarjeta 1 - Anticipación</span>
                                       <input 
                                         type="text"
                                         value={config.hero_card1_title || ''}
@@ -3665,7 +3665,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
 
                                     {/* Card 2 */}
                                     <div className="bg-[#120B07] p-3 rounded-lg border border-[#D9822B]/30 space-y-2">
-                                      <span className="text-[11px] font-bold text-[#E5C384] uppercase block">Tarjeta 2 (Horarios/Montaje)</span>
+                                      <span className="text-[11px] font-bold text-[#E5C384] uppercase block">Tarjeta 2 - Horarios y Montaje</span>
                                       <input 
                                         type="text"
                                         value={config.hero_card2_title || ''}
@@ -3684,7 +3684,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
 
                                     {/* Card 3 */}
                                     <div className="bg-[#120B07] p-3 rounded-lg border border-[#D9822B]/30 space-y-2">
-                                      <span className="text-[11px] font-bold text-[#E5C384] uppercase block">Tarjeta 3 (Garzones)</span>
+                                      <span className="text-[11px] font-bold text-[#E5C384] uppercase block">Tarjeta 3 - Garzones</span>
                                       <input 
                                         type="text"
                                         value={config.hero_card3_title || ''}
@@ -4180,8 +4180,6 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         )}
                       </div>
                     )}
-                      </div>
-                    )}
 
                     {/* CATEGORY: CONTACT & BUSINESS HOURS ACCORDION */}
                     {(settingsSubCategory === 'all' || settingsSubCategory === 'contact') && (
@@ -4374,7 +4372,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                               <FileText className="w-5 h-5" />
                             </div>
                             <div>
-                              <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Términos y Condiciones Oficiales (Editor Enriquecido)</h6>
+                              <h6 className="font-sans font-bold text-sm text-[#FAF6F0]">Términos y Condiciones Oficiales</h6>
                               <p className="text-[11px] text-[#A6988B]">Edita el contenido completo de las políticas y términos del sitio.</p>
                             </div>
                           </div>
@@ -4458,7 +4456,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                                   <thead className="bg-[#1A120C] text-[#E5C384] font-sans uppercase tracking-wider text-[11px] border-b border-[#D9822B]/20 sticky top-0 z-10">
                                     <tr>
                                       <th className="p-3">Comuna</th>
-                                      <th className="p-3">Tarifa de Despacho (CLP)</th>
+                                      <th className="p-3">Tarifa de Despacho CLP</th>
                                       <th className="p-3">Estado Cobertura</th>
                                       <th className="p-3 text-right">Acciones</th>
                                     </tr>
@@ -5469,7 +5467,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                     
                     {/* Search Input */}
                     <div>
-                      <label className="text-[#E5C384] font-bold block mb-1">Búsqueda (Admin, RUT, Motivo, Ítem)</label>
+                      <label className="text-[#E5C384] font-bold block mb-1">Búsqueda</label>
                       <div className="relative">
                         <Search className="w-4 h-4 text-[#A6988B] absolute left-3 top-2.5" />
                         <input 
@@ -5490,7 +5488,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         onChange={(e) => setAuditTypeFilter(e.target.value)}
                         className="w-full p-2 bg-[#120B07] border border-[#D9822B]/40 rounded-xl text-xs text-[#FAF6F0] font-semibold focus:outline-none focus:border-[#D9822B]"
                       >
-                        <option value="ALL">Todos los Eventos (Pedidos + Parámetros)</option>
+                        <option value="ALL">Todos los Eventos</option>
                         <option value="ORDERS">📦 Cambios en Pedidos</option>
                         <option value="CONFIG">⚙️ Cambios en Parámetros del Negocio</option>
                       </select>
@@ -5807,7 +5805,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
               <div className="fixed inset-0 z-70 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
                 <div className="glass-panel w-full max-w-2xl p-6 relative space-y-4 bg-[#1D150F] my-auto max-h-[90vh] overflow-y-auto">
                   <div className="flex justify-between items-center border-b border-[#D9822B]/20 pb-3">
-                    <h4 className="font-sans text-lg font-bold text-[#E5C384]">Editar Administrador ({editingAdmin.username})</h4>
+                    <h4 className="font-sans text-lg font-bold text-[#E5C384]">Editar Administrador: {editingAdmin.username}</h4>
                     <button onClick={() => setEditingAdmin(null)} className="text-[#A6988B] hover:text-[#FAF6F0]"><X className="w-5 h-5" /></button>
                   </div>
 
@@ -5953,7 +5951,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                       if (isSelfAccount) {
                         return (
                           <div>
-                            <label className="text-[#E5C384] font-bold block mb-1">Selección de Contraseña (Cambiar Tu Contraseña - Opcional)</label>
+                            <label className="text-[#E5C384] font-bold block mb-1">Cambiar Tu Contraseña</label>
                             <input 
                               type="password"
                               placeholder="Dejar en blanco para mantener tu contraseña actual"
@@ -6050,7 +6048,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
 
                     {selectedClientModal.coupon_code && (
                       <div className="sm:col-span-2 pt-1 border-t border-[#D9822B]/10 flex items-center justify-between">
-                        <span className="text-[#A6988B]">Cupón de Bienvenida (5% Desc):</span>
+                        <span className="text-[#A6988B]">Cupón de Bienvenida 5% Desc:</span>
                         <span className="font-mono text-[#E5C384] font-bold bg-[#D9822B]/15 px-2 py-0.5 rounded border border-[#D9822B]/30">
                           {selectedClientModal.coupon_code}
                         </span>
@@ -6243,12 +6241,12 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                     <div className="bg-[#120B07] p-3.5 rounded-xl border border-[#D9822B]/20 space-y-3">
                       <p className="text-[11px] font-bold text-[#E5C384] uppercase tracking-wide flex items-center gap-1.5">
                         <FileText className="w-3.5 h-3.5 text-[#D9822B]" />
-                        2. Identificación RUT Atomizada (Cuerpo + DV)
+                        2. Identificación RUT
                       </p>
 
                       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                         <div className="sm:col-span-3">
-                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1 font-semibold">Cuerpo RUT (Sin puntos ni guion)</label>
+                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1 font-semibold">Cuerpo RUT</label>
                           <input 
                             type="text" 
                             value={clientForm.rut_body}
@@ -6259,7 +6257,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         </div>
 
                         <div>
-                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1 font-semibold">DV (Dígito)</label>
+                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1 font-semibold">Dígito Verificador</label>
                           <input 
                             type="text" 
                             maxLength={1}
@@ -6272,11 +6270,11 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                       </div>
                     </div>
 
-                    {/* Section 3: Contacto & Dirección (3NF FK Comuna) */}
+                    {/* Section 3: Contacto & Dirección */}
                     <div className="bg-[#120B07] p-3.5 rounded-xl border border-[#D9822B]/20 space-y-3">
                       <p className="text-[11px] font-bold text-[#E5C384] uppercase tracking-wide flex items-center gap-1.5">
                         <Phone className="w-3.5 h-3.5 text-[#D9822B]" />
-                        3. Contacto & Ubicación Normalizada (3NF FK Comuna)
+                        3. Contacto & Ubicación
                       </p>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -6304,7 +6302,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         </div>
 
                         <div className="sm:col-span-2">
-                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1 font-semibold">Comuna de Residencia (FK Normalizada)</label>
+                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1 font-semibold">Comuna de Residencia</label>
                           <select 
                             value={clientForm.commune_id}
                             onChange={e => setClientForm({...clientForm, commune_id: e.target.value})}
@@ -6320,7 +6318,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                         </div>
 
                         <div className="sm:col-span-2">
-                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1">Calle, Número y Depto (Dirección Atomizada)</label>
+                          <label className="block text-[#A6988B] text-[10px] uppercase mb-1">Calle, Número y Depto</label>
                           <input 
                             type="text" 
                             value={clientForm.address}
@@ -6384,7 +6382,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                       <p><strong className="text-[#E5C384]">RUT:</strong> <span className="text-[#FAF6F0] font-mono">{selectedOrder.client_rut || 'Sin RUT'}</span></p>
                       <p><strong className="text-[#E5C384]">Contacto:</strong> <span className="text-[#A6988B] font-mono">{selectedOrder.client_phone} | {selectedOrder.client_email}</span></p>
                       <p><strong className="text-[#E5C384]">Dirección:</strong> <span className="text-[#FAF6F0]">{selectedOrder.address}</span></p>
-                      <p><strong className="text-[#E5C384]">Fecha / Horario:</strong> <span className="text-[#FAF6F0] font-semibold">{selectedOrder.event_date} ({selectedOrder.time_slot})</span></p>
+                      <p><strong className="text-[#E5C384]">Fecha / Horario:</strong> <span className="text-[#FAF6F0] font-semibold">{selectedOrder.event_date} - {selectedOrder.time_slot}</span></p>
                       <p><strong className="text-[#E5C384]">Monto Total:</strong> <span className="text-[#FAF6F0] font-mono font-bold ml-1">${Number(selectedOrder.final_total || 0).toLocaleString('es-CL')} CLP</span></p>
                     </div>
 
@@ -6490,7 +6488,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                                   }}
                                   className="w-3.5 h-3.5 accent-[#D9822B] rounded cursor-pointer"
                                 />
-                                <span>Devolver Monto Total (${Number(selectedOrder?.final_total || 0).toLocaleString('es-CL')})</span>
+                                <span>Devolver Monto Total ${Number(selectedOrder?.final_total || 0).toLocaleString('es-CL')} CLP</span>
                               </label>
                             </div>
                             <input 
@@ -6695,7 +6693,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
 
                     <div>
                       <div className="flex justify-between items-center mb-1">
-                        <label className="text-[#A6988B] font-semibold block">Slug URL (Dirección Web Única)</label>
+                        <label className="text-[#A6988B] font-semibold block">Slug URL</label>
                         <span className="text-[10px] text-[#D9822B] italic">Autogenerado</span>
                       </div>
                       <input 
@@ -6765,7 +6763,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                     </div>
 
                     <div>
-                      <label className="text-[#E5C384] font-bold block mb-1">Nombre del Producto * (Máx 150 caracteres)</label>
+                      <label className="text-[#E5C384] font-bold block mb-1">Nombre del Producto *</label>
                       <input 
                         type="text"
                         required
@@ -6779,7 +6777,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="text-[#E5C384] font-bold block mb-1">Precio ($ CLP) * (Entre $100 y $50M)</label>
+                        <label className="text-[#E5C384] font-bold block mb-1">Precio CLP *</label>
                         <input 
                           type="number"
                           required
@@ -6793,7 +6791,7 @@ export default function AdminDashboard({ isOpen, onClose, onConfigSaved, onCatal
                       </div>
 
                       <div>
-                        <label className="text-[#E5C384] font-bold block mb-1">Porciones / Piezas * (1 a 10.000)</label>
+                        <label className="text-[#E5C384] font-bold block mb-1">Porciones / Piezas *</label>
                         <input 
                           type="number"
                           required
