@@ -936,9 +936,18 @@ def get_or_create_client_atomized(
 
 def sync_clients_from_legacy_orders():
     """
-    Sincroniza y migra de forma transparente los registros legacy de Order y LeadCoupon
+    Sincroniza y migra de forma transparente los registros legacy de Order
     hacia la entidad normalizada Client (3NF).
+    Limpia además clientes ficticios creados previamente a partir de solicitudes de cupones sin pedidos.
     """
+    # 1. Limpiar registros ficticios/placeholder de clientes sin pedidos
+    Client.objects.filter(
+        first_name='Cliente',
+        last_name_paternal='Registrado',
+        orders__isnull=True
+    ).delete()
+
+    # 2. Sincronizar clientes exclusivamente desde pedidos reales
     orders = Order.objects.all().order_by('created_at')
     for ord in orders:
         dec_rut = ord.decrypted_rut or ord.client_rut or ''
@@ -956,10 +965,6 @@ def sync_clients_from_legacy_orders():
         if client_obj and ord.client_id != client_obj.id:
             ord.client = client_obj
             ord.save(update_fields=['client'])
-            
-    leads = LeadCoupon.objects.all()
-    for lead in leads:
-        get_or_create_client_atomized(email=lead.email)
 
 @api_view(['POST'])
 def create_order(request):
